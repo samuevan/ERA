@@ -1,0 +1,168 @@
+# Copyright 2006 by Sean Luke and George Mason University
+# Licensed under the Academic Free License version 3.0
+# See the file "LICENSE" for more information
+
+#foi preciso setar o arquivo relativo a uma classe pois o java perdia a referencia qdo o arquivo era chamada de dentro de um jar
+parent.0 = @ec.gp.koza.GPKozaDefaults koza.params
+
+print-params = true
+print-accessed-params = true
+print-used-params = true
+#stat = ec.gp.koza.KozaShortStatistics
+
+generations = 5
+pop.subpop.0.size = 10
+
+#breedthreads = 4
+#evalthreads = 4
+
+breed.elite.0 = 2
+#seed.0 = 123
+#seed.1 = -13123
+#seed.2 = 54123
+#seed.3 = -98123
+
+####################################################################################################
+
+#
+# Here we define the default values for Crossover,
+# Reproduction, Mutation, as well as our selection
+# approaches (Koza I).  These can be overridden on a per-species
+# level of course.
+#
+
+# Reproduction will use Tournament Selection 
+breed.reproduce.source.0 = ec.select.TournamentSelection
+
+# Crossover will use Tournament Selection, try only 1
+# time, have a max depth of 17, and use KozaNodeSelector
+gp.koza.xover.source.0 = ec.select.TournamentSelection
+gp.koza.xover.source.1 = same
+gp.koza.xover.ns.0 = ec.gp.koza.KozaNodeSelector
+gp.koza.xover.ns.1 = same
+gp.koza.xover.maxdepth = 17
+# This is the default for Koza and lil-gp, though it's
+# a little wimpy; on the other hand, a higher number can
+# make things really slow
+gp.koza.xover.tries = 1
+
+
+
+
+# Point Mutation will use Tournament Selection, try only 1
+# time, have a max depth of 17, and use KozaNodeSelector
+# and GROW for building.  Also, Point Mutation uses a GrowBuilder
+# by default, with a default of min-depth=max-depth=5
+# as shown a ways below
+gp.koza.mutate.source.0 = ec.select.TournamentSelection
+gp.koza.mutate.ns.0 = ec.gp.koza.KozaNodeSelector
+gp.koza.mutate.build.0 = ec.gp.koza.GrowBuilder
+gp.koza.mutate.maxdepth = 17
+# This is the default for Koza and lil-gp, though it's
+# a little wimpy; on the other hand, a higher number can
+# make things really slow
+gp.koza.mutate.tries = 1
+
+
+
+
+#
+# The default tournament size for TournamentSelection is 7
+#
+
+select.tournament.size = 7
+
+
+
+pop.subpop.0.species.pipe.num-sources = 3
+pop.subpop.0.species.pipe.source.0 = ec.gp.koza.CrossoverPipeline
+pop.subpop.0.species.pipe.source.0.prob = 0.85
+pop.subpop.0.species.pipe.source.1 = ec.gp.koza.MutationPipeline
+pop.subpop.0.species.pipe.source.1.prob = 0.05
+pop.subpop.0.species.pipe.source.2 = ec.breed.ReproductionPipeline
+pop.subpop.0.species.pipe.source.2.prob = 0.1
+
+gp.tree.print-style = latex
+gp.koza.ns.terminals = 0.3
+gp.koza.ns.nonterminals = 0.7
+
+####################################################################################################
+
+# the next four items are already defined in koza.params, but we
+# put them here to be clear.
+
+# We have one function set, of class GPFunctionSet
+gp.fs.size = 1
+gp.fs.0 = ec.gp.GPFunctionSet
+# We'll call the function set "f0".
+gp.fs.0.name = f0
+
+# We have five functions in the function set.  They are:
+gp.fs.0.size = 19
+
+#funcoes
+
+gp.fs.0.func.0 = ec.app.gpra.terminals.AlphaERC
+gp.fs.0.func.0.nc = nc0
+gp.fs.0.func.1 = ec.app.gpra.functions.Log
+gp.fs.0.func.1.nc = nc1
+gp.fs.0.func.2 = ec.app.gpra.functions.Add
+gp.fs.0.func.2.nc = nc2
+gp.fs.0.func.3 = ec.app.gpra.functions.Mul
+gp.fs.0.func.3.nc = nc2
+gp.fs.0.func.4 = ec.app.gpra.functions.Sub
+gp.fs.0.func.4.nc = nc2
+gp.fs.0.func.5 = ec.app.gpra.functions.Div
+gp.fs.0.func.5.nc = nc2
+
+
+#Terminals
+
+gp.fs.0.func.6 = ec.app.gpra.terminals.Score0
+gp.fs.0.func.6.nc = nc0
+gp.fs.0.func.7 = ec.app.gpra.terminals.Score1
+gp.fs.0.func.7.nc = nc0
+gp.fs.0.func.8 = ec.app.gpra.terminals.Score2
+gp.fs.0.func.8.nc = nc0
+gp.fs.0.func.9 = ec.app.gpra.terminals.Score3
+gp.fs.0.func.9.nc = nc0
+gp.fs.0.func.10 = ec.app.gpra.terminals.Score4
+gp.fs.0.func.10.nc = nc0
+gp.fs.0.func.11 = ec.app.gpra.terminals.Score5
+gp.fs.0.func.11.nc = nc0
+gp.fs.0.func.12 = ec.app.gpra.terminals.Score6
+gp.fs.0.func.12.nc = nc0
+gp.fs.0.func.13 = ec.app.gpra.terminals.Score7
+gp.fs.0.func.13.nc = nc0
+gp.fs.0.func.14 = ec.app.gpra.terminals.Score8
+gp.fs.0.func.14.nc = nc0
+
+gp.fs.0.func.15 = ec.app.gpra.terminals.TimesOnRankings
+gp.fs.0.func.15.nc = nc0
+gp.fs.0.func.16 = ec.app.gpra.terminals.ProbTop10
+gp.fs.0.func.16.nc = nc0
+gp.fs.0.func.17 = ec.app.gpra.terminals.MeanAgreements
+gp.fs.0.func.17.nc = nc0
+gp.fs.0.func.18 = ec.app.gpra.terminals.OutrankScore
+gp.fs.0.func.18.nc = nc0
+
+
+gp.fs.0.func.19 = ec.app.gpra.terminals.Score9
+gp.fs.0.func.19.nc = nc0
+gp.fs.0.func.20 = ec.app.gpra.terminals.Score10
+gp.fs.0.func.20.nc = nc0
+gp.fs.0.func.21 = ec.app.gpra.terminals.Score11
+gp.fs.0.func.21.nc = nc0
+gp.fs.0.func.22 = ec.app.gpra.terminals.Score12
+gp.fs.0.func.22.nc = nc0
+gp.fs.0.func.23 = ec.app.gpra.terminals.Score13
+gp.fs.0.func.23.nc = nc0
+gp.fs.0.func.24 = ec.app.gpra.terminals.Score14
+gp.fs.0.func.24.nc = nc0
+
+
+eval.problem = ec.app.gpra.GPRA_Problem
+eval.problem.data = ec.app.gpra.DoubleData
+state = ec.app.gpra.MySimpleEvolutionState
+pop.subpop.0.species.ind = ec.app.gpra.MyIndividual
+
