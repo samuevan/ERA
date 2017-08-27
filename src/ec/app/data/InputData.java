@@ -9,9 +9,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
+
 
 //import lda_gpra.LDARA;
 //import lda_gpra.LDAUser;
@@ -41,9 +43,158 @@ public class InputData {
 	private int numItemsToSuggest;
 	private boolean use_sparse = false;
 	
+	
+	
+	
+	/**
+	 * Construct a mapping linking the group_ids to the users that are part of the group.
+	 * A user can belongs to more than one group
+	 * 
+	 * @param groupfile The file containing the groups. 
+	 * Each line has the following structure -> group_id: u1,u2,u3...,un
+	 * 
+	 * @return A hashmap where the key is the group_id and the values the list of 
+	 * users whose belongs to the groups
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	private HashMap<Integer,Vector<Integer>> ConstructGroupMap(File groupfile) throws FileNotFoundException{        
+        HashMap<Integer,Vector<Integer>> map_group_users = new HashMap<Integer, Vector<Integer>>();        
+        Scanner group_scanner = new Scanner(groupfile);        
+        while(group_scanner.hasNextLine()){            
+            String[] tokens = group_scanner.nextLine().trim().split(":");
+            int group_id = Integer.parseInt(tokens[0]);
+            Vector<Integer>  group_users = new Vector<Integer>();
+            for(String usr : tokens[1].trim().split(",")){
+            	group_users.add(Integer.parseInt(usr));
+            	
+            }             
+            map_group_users.put(group_id,group_users);
+            
+        }      
+        return map_group_users;
+    } 
+    
+	
+	/**
+	 * Read a file containing the input rankings for all the users and returns these rankings
+	 * 
+	 * @param input_ranking The input rankings for all the users
+	 * @return A Vector containg the rankings (here we are considering that the users 
+	 * appears in the input ranking in the same order they appear in the file used to construc the usermap. 
+	 * If it was not the case the ideal would be contruct a mapping where the key is the user_id and the 
+	 * values are the rankings recommended to each user)
+	 * 
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	private Vector<Vector<Integer>> LoadInputRanking(File input_ranking_file) throws FileNotFoundException{
+		
+		Scanner scann_input = new Scanner(input_ranking_file);
+		Vector<Vector<Integer>> input_ranking = new Vector<Vector<Integer>>();
+		//Read the ranking of each user (each line corresponds to a user
+		int user_pos = 0;
+		while (scann_input.hasNextLine()){
+			String line_user[] = scann_input.nextLine().split("\t");				
+			String items[] = line_user[1].substring(1, line_user[1].length()-1).split(",");
+			
+			
+			input_ranking.add(new Vector<Integer>());
+			for (String item_and_score : items){
+				
+				int item_id = Integer.parseInt(item_and_score.split(":")[0]);
+				input_ranking.lastElement().add(item_id);								
+			}
+				
+			
+		}
+		
+		
+		return input_ranking;
+	}
+	
+	
+	
+	
+	
+	
+    private void ExtractGroupFeatures(File groupfile, Vector<File> inputs, int numItemsToUse, int numItemsToSuggest) throws FileNotFoundException{
+    
+    	//construct the map containing the group_ids and the users that belongs to each group
+    	HashMap<Integer, Vector<Integer>>group_map = ConstructGroupMap(groupfile);
+    	//read the input file correspondent to the base recommender that will be used
+    	//in the future we can use more than one ranking as input, therefore the function signature 
+    	//receives a vector of files
+    	Vector<Vector<Integer>> input_ranking =	LoadInputRanking(inputs.get(0));
+    	
+    	
+    	
+    	for(Integer group_id : group_map.keySet()){
+    		
+    		Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
+    		int grp_size = users_in_grp.size();
+    		User grp_usr = new User(group_id,numRankings,numItemsToUse); //construct a pseudo user that represents the group
+    		Usuarios.add(grp_usr);
+    		    		
+    		int usr_pos_in_grp = 0;
+    		for (Integer usr : users_in_grp){    			
+    			int usr_position = map_user_posicao.get(usr);//take the position the user should have in the input_ranking
+    			
+    			Vector<Integer> usr_ranking = input_ranking.get(usr_position);
+    			grp_usr.addOriginalRanking(usr_ranking); //store the ranking correspondent to the user in the group    			
+    			
+    			for (int item_pos = 0; item_pos < usr_ranking.size(); item_pos++){
+    				int item_id = usr_ranking.get(item_pos);  
+    				grp_usr.addItem(item_id);
+    				grp_usr.setItemPosition(item_id, usr_pos_in_grp, item_pos+1);
+    				//grp_usr.setItemScore(item_id, usr_pos_in_grp, Metrics.calcRankNorm(it+1, sizeRankings));
+    			}    			    			
+    			
+    		}
+    		//Chama todas as funções de calculo de feature;;;
+    		grp_usr.ComputeFeatures();
+    		
+    		
+    		
+    	} 
+    	
+    	
+    	
+    }
+	
+    
+    
+	/**
+	 * Construct the maps that will be used in the vector Usuarios
+	 * With this mappings we can interchangeably refer to the user_id or to its position in Usuarios vector
+	 * The mappings are stored in the class attributes map_posicao_user and map_user_posicao
+	 *  
+	 * @param usermap  
+	 * @throws FileNotFoundException
+	 */
+    private void ConstructUserMaps(File usermap) throws FileNotFoundException{
+    	
+			map_posicao_user = new HashMap<Integer, Integer>();
+			map_user_posicao = new HashMap<Integer, Integer>();
+			Scanner scann = new Scanner(usermap);
+			while(scann.hasNextLine()){
+				String dados[] = scann.nextLine().split("\t");
+				int user_id = Integer.parseInt(dados[0]);
+				int user_pos = Integer.parseInt(dados[1]);
+				
+				map_posicao_user.put(user_pos, user_id);
+				map_user_posicao.put(user_id,user_pos);
+			}
+			
+			scann.close();
+		
+    }
+    
+    
 	public InputData(Vector<File> inputs, File testInput, File usermap, int numItemsToUse, int numItemsToSuggest) throws IOException{
 		
 		//*********************************************READ MAPS***********************************
+		//TODO Call the function ConstructUserMaps
 		map_posicao_user = new HashMap<Integer, Integer>();
 		map_user_posicao = new HashMap<Integer, Integer>();
 		Scanner scann = new Scanner(usermap);

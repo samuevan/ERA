@@ -48,17 +48,17 @@ public class ParameterParser {
 				.help("Number of individuals to be used in the evolutionary process");
         
         parser.addArgument("-m","--mut")
-				.type(Float.class)
+				.type(Double.class)
 				.setDefault(0.35)
 				.help("Mutation probability. Use range [0-1]");
 
         parser.addArgument("-x","--xover")
-				.type(Float.class)
+				.type(Double.class)
 				.setDefault(0.65)
 				.help("Crossover probability. Use range [0-1]");
         
         parser.addArgument("-r","--rep")
-				.type(Float.class)
+				.type(Double.class)
 				.setDefault(0.1)
 				.help("Mutation probability. Use range [0-1]");
         
@@ -77,7 +77,7 @@ public class ParameterParser {
         
         parser.addArgument("--init_run")
 				.type(Integer.class)
-				.setDefault(1)
+				.setDefault(0)
 				.help("The run to begin execution (Controls which set of seed will be used)");
         
         parser.addArgument("--i2use")
@@ -125,6 +125,7 @@ public class ParameterParser {
         
         parser.addArgument("--noGP")
 				.type(Boolean.class)
+				.setDefault(false)
 				.action(storeTrue())
 				.help("Dissable GP execution. "
 						+ "Can be used to just save the atributes or to reeval the individuals");
@@ -142,11 +143,16 @@ public class ParameterParser {
         
         //TODO if use this we need to use another parameter to define the niching strategy
         parser.addArgument("--nich")
-				.type(Boolean.class)
-				.setDefault(false)
-				.action(storeTrue())
-				.help("Enables the use of niching");
+				.type(Integer.class)
+				.choices(0, 1, 2)
+				.setDefault(0)				
+				.help("Chooses the type of niching to be used. 0) No niching 1) type1 2) type2 (NOT IMPLEMENTED)");
 
+        parser.addArgument("--tshare")
+        		.type(Double.class)
+        		.setDefault(0.001)
+        		.help("Theta share. Parameter used in fitness sharing niching strategie");
+        
 
         parser.addArgument("--use_plain")
 				.type(Boolean.class)

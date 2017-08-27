@@ -59,8 +59,6 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	}
 	
 	
-	
-	
 	private void initializeVectors()
 	{
 		for(int i = 0; i < numRankings; i++)

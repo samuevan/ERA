@@ -157,6 +157,10 @@ public class User {
 		return originalRankings2.get(rank);
 	}
 	
+	public void addOriginalRanking(Vector<Integer> rank){
+		originalRankings2.add(rank);
+	}
+	
 	
 	//Adciona um item a um ranking em uma posicao especifica
 	/*public void addItemOriginalRanking(int it, int rank, int position){
@@ -327,7 +331,117 @@ public class User {
 	public Vector<Vector<Integer>> getAlternativeRankings(){
 		return alternative_rankings;
 	}
+	
+	/**
+	 * Computes the features RankScore to all the items recommended
+	 * to this user. It is important to notice that there is one feature to each 
+	 * input ranking. The features are stored in the respective items
+	 * 
+	 */
+	public void computeItemsRankScore(){
 		
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			for (int rank = 0; rank < numRankings; rank++ ){				
+				double rsc = Metrics.calcRankNorm(item.getPosition(rank), numRankItems);
+				item.setRankScore(rsc, rank);
+			} 
+			
+			
+		}
+		
+	}
+	
+	
+	/**
+	 * Computes the probability of the items be placed before the threshold.
+	 * @param threshold The percentile to be used as threshold. 
+	 * For example, if threshold = 0.3 and the rank size = 10, them we are computing the 
+	 * probability of the items be placed in the top 3 positions 
+	 */
+	public void computeProbOnTopK(double threshold){		
+				
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			int times_top_k = 0;
+			for (int rank = 0; rank < numRankings; rank++ ){
+				int pos_threshold = (int)(threshold * numRankItems);
+				int item_pos = item.getPosition(rank);
+						
+				if((item_pos != -1) && (item_pos <= pos_threshold))
+					times_top_k++;
+											
+			} 
+			
+			double prob_top_k = (float)times_top_k/numRankings;
+			item.setProbTop10(prob_top_k);
+			
+			
+		}
+		
+	}
+	
+	
+	/**
+	 * Computes the number of times each item are recommended to the user
+	 *  TODO verify if it is better to store the percentage instead of number of times 
+	 */
+	public void computeTimesOnRanks(){		
+				
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			int times_on_rank = 0;
+			for (int rank = 0; rank < numRankings; rank++ ){
+				
+				int item_pos = item.getPosition(rank);
+						
+				if((item_pos != -1))
+					times_on_rank++;										
+			} 
+						
+			item.setTimesR(times_on_rank);
+			
+			
+		}
+		
+	}
+	
+	/**
+	 * Computes the agreament as defined in the paper Evolutionary RAnk Aggregation for Recommender Systems
+	 * This feature consists in the agreement between the rankings considering a sliding windows
+	 * 
+	 * @param window The size of the sliding window
+	 * TODO Verify if it is better to place the function in the User class
+	 * TODO Verify if the window is the size of the sliding window or the number of items before and after
+	 * 
+	 */
+	
+	public void computeAgreements(int window){
+		
+		for(Integer item_id : Items.keySet()){			
+			Item item = Items.get(item_id);
+			item.calcAgreements(window);
+		}	
+	}
+	
+	
+	public void ComputeFeatures(){
+		computeItemsRankScore();
+		computeProbOnTopK(0.3); //TODO receive as parameter
+		computeTimesOnRanks();
+		computeAgreements(2); //TODO receive as parameter
+	}
+		
+	
 	public Vector<Integer> getGpra_ranking() {
 		return gpra_ranking;
 	}
@@ -343,6 +457,10 @@ public class User {
 	public void setGpra_ranking_scores(Vector<Double> gpra_ranking_scores) {
 		this.gpra_ranking_scores = gpra_ranking_scores;
 	}
+	
+	
+	
+	
 	
 	public String print_gpra_ranking(int size_ranking){
 		String s = this.ID+"\t[";
