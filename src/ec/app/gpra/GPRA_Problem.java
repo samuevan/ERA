@@ -47,6 +47,7 @@ public class GPRA_Problem extends GPProblem implements
 	public double probTop10 = 0;
 	public int timesOnRankings = 0;
 	public double outrank_score = 0;
+	public double bordaComplete = 0;
 	
 	public void setup(final EvolutionState state, final Parameter base) {
 		
@@ -141,6 +142,7 @@ public class GPRA_Problem extends GPProblem implements
 			timesOnRankings = item.getTimesR();
 			outrank_score = item.getOutrankScore()*4; //TODO pq estou multiplicando por 4???			
 			meanAgreements = item.getMeanAgreements();
+			bordaComplete = item.getBordaScoreComplete();
 			//categorie_score = item.get_categories_score();
 
 			((GPIndividual) ind).trees[0].child.eval(state, threadnum,
@@ -170,7 +172,10 @@ public class GPRA_Problem extends GPProblem implements
 			int numItemsToEval = dados.getNumRankItems();
 			int numItemsToSuggest = dados.getNumItemsToSuggest();
 			int numItemsToUse = dados.getNumRankItems();
-			numUsedRanks = dados.getNumRankings();
+			//I'm taking the number of rankings from the user, 
+			//therefore i can control how many rankings are used by  each user
+			//The first step to handle users with different number of rankings
+			//numUsedRanks = dados.getNumRankings(); 
 			int hits = 0;
 			double sum = 0.0;
 			double expectedResult;
@@ -197,12 +202,17 @@ public class GPRA_Problem extends GPProblem implements
 				Vector<Integer> saida_items = new Vector<Integer>();
 				Vector<Double> saida_scores = new Vector<Double>();
 				
-				Iterator<Integer> item_iter = users.get(user_pos).getItemIterator();
+				User curr_user = users.get(user_pos); 
+				numUsedRanks = curr_user.getNumRankings();
+				
+				Iterator<Integer> item_iter = curr_user.getItemIterator();
+				
+				
 				
 				while(item_iter.hasNext()){
 					
 					Integer item_key = item_iter.next();
-					Item item = users.get(user_pos).getItem(item_key);
+					Item item = curr_user.getItem(item_key);
 					
 					
 					genericDoubles = new double[20];
@@ -238,7 +248,8 @@ public class GPRA_Problem extends GPProblem implements
 					outrank_score = item.getOutrankScore();
 					
 					meanAgreements = item.getMeanAgreements();
-					
+					bordaComplete = item.getBordaScoreComplete();
+
 					//categorie_score = item.get_categories_score();
 					
 					
@@ -253,8 +264,8 @@ public class GPRA_Problem extends GPProblem implements
 				}
 				long siz = ind.size();
 				Vector<Integer> user_hits = new Vector<Integer>();
-				double prec_test_aux = Metrics.precision(users.get(user_pos).getTestRanking(), saida_items,null,numItemsToSuggest);
-				double prec_val_aux = Metrics.precision(users.get(user_pos).getValidationRanking(), saida_items, user_hits,numItemsToSuggest);								
+				double prec_test_aux = Metrics.precision(curr_user.getTestRanking(), saida_items,null,numItemsToSuggest);
+				double prec_val_aux = Metrics.precision(curr_user.getValidationRanking(), saida_items, user_hits,numItemsToSuggest);								
 				
 				//System.out.println(saida_items);
 				//System.out.println(saida_scores);
@@ -263,9 +274,9 @@ public class GPRA_Problem extends GPProblem implements
 				if (save_ranking){
 					
 					for(int j = 0; j < numItemsToSuggest; j++){
-						Vector<Integer> r = users.get(user_pos).getGpra_ranking();
-						users.get(user_pos).getGpra_ranking().set(j,saida_items.get(j));
-						users.get(user_pos).getGpra_ranking_scores().set(j,saida_scores.get(j)); // add(saida_scores.get(j));
+						Vector<Integer> r = curr_user.getGpra_ranking();
+						curr_user.getGpra_ranking().set(j,saida_items.get(j));
+						curr_user.getGpra_ranking_scores().set(j,saida_scores.get(j)); // add(saida_scores.get(j));
 					}
 					
 				}
@@ -281,8 +292,8 @@ public class GPRA_Problem extends GPProblem implements
 				
 				
 				
-				int hitsx_sug = Metrics.numHits(saida_items, users.get(user_pos).getValidationRanking(), numItemsToSuggest);
-				int hitsx_use = Metrics.numHits(saida_items, users.get(user_pos).getValidationRanking(), numItemsToEval);
+				int hitsx_sug = Metrics.numHits(saida_items, curr_user.getValidationRanking(), numItemsToSuggest);
+				int hitsx_use = Metrics.numHits(saida_items, curr_user.getValidationRanking(), numItemsToEval);
 				mean_hits_sug += hitsx_sug;
 				mean_hits_use += hitsx_use;
 				prec_test += prec_test_aux;
@@ -294,15 +305,15 @@ public class GPRA_Problem extends GPProblem implements
 				
 				//*************************LOG******************
 				/*
-				prec_5_t += Metrics.precision_at(users.get(user_pos).getTestRanking(), saida_items,5);
-				prec_5_v += Metrics.precision_at(users.get(user_pos).getValidationRanking(), saida_items,5);
-				prec_10_t += Metrics.precision_at(users.get(user_pos).getTestRanking(), saida_items,10);
-				prec_10_v += Metrics.precision_at(users.get(user_pos).getValidationRanking(), saida_items,10);
+				prec_5_t += Metrics.precision_at(curr_user.getTestRanking(), saida_items,5);
+				prec_5_v += Metrics.precision_at(curr_user.getValidationRanking(), saida_items,5);
+				prec_10_t += Metrics.precision_at(curr_user.getTestRanking(), saida_items,10);
+				prec_10_v += Metrics.precision_at(curr_user.getValidationRanking(), saida_items,10);
 				
-				map_5_t += Metrics.precision(users.get(user_pos).getTestRanking(), saida_items,5);
-				map_5_v += Metrics.precision(users.get(user_pos).getValidationRanking(), saida_items,5);
-				map_10_t += Metrics.precision(users.get(user_pos).getTestRanking(), saida_items,10);
-				map_10_v += Metrics.precision(users.get(user_pos).getValidationRanking(), saida_items,10);
+				map_5_t += Metrics.precision(curr_user.getTestRanking(), saida_items,5);
+				map_5_v += Metrics.precision(curr_user.getValidationRanking(), saida_items,5);
+				map_10_t += Metrics.precision(curr_user.getTestRanking(), saida_items,10);
+				map_10_v += Metrics.precision(curr_user.getValidationRanking(), saida_items,10);
 				*/
 				//*************************END LOG ********************************************
 			}

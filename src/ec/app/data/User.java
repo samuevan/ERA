@@ -12,7 +12,7 @@ public class User {
 
 	private int ID;
 	private int numRankings;
-	private int numRankItems;
+	private int NumItemsToUse;
 	private Map<Integer, Item> Items;
 	//private Vector<Pair<Integer,Double>> lda_probabilities;
 	public Vector<Vector<Integer>> alternative_rankings;
@@ -34,12 +34,12 @@ public class User {
 	 * @param numR Número de rankings dados como entrada
 	 * @param numRankIt Número de elementos presentes em cada um dos rankings
 	 */
-	public User(int u, int numR, int numRankIt)
+	public User(int u, int numR, int i2use)
 	{
 		ID = u;
 		numRankings = numR;
 		Items = new HashMap<Integer, Item>();
-		numRankItems = numRankIt;
+		NumItemsToUse = i2use;
 		//originalRankings = new Vector<Integer[]>();
 		testRanking = new Vector<Integer>();
 		validationRanking = new Vector<Integer>();
@@ -50,7 +50,7 @@ public class User {
 		
 		//inicializa o vetor para salvar o ranking de saida do GPRA
 		
-		for (int g = 0; g < numRankItems; g++){
+		for (int g = 0; g < NumItemsToUse; g++){
 			gpra_ranking.add(0);
 			gpra_ranking_scores.add(0.0);
 			
@@ -60,7 +60,7 @@ public class User {
 		originalRankings2 = new Vector<Vector<Integer>>();
 		alternative_rankings  = new Vector<Vector<Integer>>();
 		//Aloca espaço para os rankings originais
-		if(numRankIt > 0){
+		if(i2use > 0){
 			initializeOriginalRankings();
 			originalRankingsInitialized = true;
 		}
@@ -186,10 +186,19 @@ public class User {
 		return testRanking;
 	}
 	
+	public void setTestRanking(Vector<Integer> testRanking){
+		this.testRanking = testRanking; 
+	}
+	
 	
 	public Vector<Integer> getValidationRanking() {
 		return validationRanking;
 	}
+	
+	public void setValidationRanking(Vector<Integer> validationRanking) {
+		this.validationRanking = validationRanking;
+	}
+
 	
 	//TODO alterar nome para getItemIterator
 	public Iterator<Integer> getItemIterator(){
@@ -211,11 +220,11 @@ public class User {
 
 	
 	public void setNumRankItems(int numRI){
-		numRankItems = numRI;
+		NumItemsToUse = numRI;
 	}
 	
 	public int getNumRankItems(){
-		return numRankItems;
+		return NumItemsToUse;
 	}
 	
 	/*public void addNewRanking(Vector<Integer> newRanking){
@@ -243,13 +252,13 @@ public class User {
 			if(!hasItem(item)){
 				this.addItem(item); 
 				this.setItemPosition(item, numRankings-1, i + 1);
-				this.setItemScore(item, numRankings-1,Metrics.calcRankNorm(i+ 1, numRankItems));
+				this.setItemScore(item, numRankings-1,Metrics.calcRankNorm(i+ 1, NumItemsToUse));
 
 			} 
 			else {
 				
 				this.setItemPosition(item, numRankings-1, i + 1);
-				this.setItemScore(item, numRankings-1,Metrics.calcRankNorm(i + 1, numRankItems));
+				this.setItemScore(item, numRankings-1,Metrics.calcRankNorm(i + 1, NumItemsToUse));
 			}
 		
 		}
@@ -278,10 +287,10 @@ public class User {
 				}
 				else
 				{
-					double init = 1.0 - (numRankItems-1)/(float)this.getNumItems(); //calcula o valor inicial para que os itens que nao estao no ranking nao passem dos itens que estao no ranking
-					init = init - (((numRankItems-1)/(float)(2*this.getNumItems())) + 0.005);
+					double init = 1.0 - (NumItemsToUse-1)/(float)this.getNumItems(); //calcula o valor inicial para que os itens que nao estao no ranking nao passem dos itens que estao no ranking
+					init = init - (((NumItemsToUse-1)/(float)(2*this.getNumItems())) + 0.005);
 					
-					double d = init + ((numRankItems-1)/(float)(2* this.getNumItems()));
+					double d = init + ((NumItemsToUse-1)/(float)(2* this.getNumItems()));
 					item.setBordaScore(d, pos);
 				}
 				
@@ -345,15 +354,46 @@ public class User {
 			
 			Item item = Items.get(item_id);
 			//Computes the value of the feature for each input ranking
-			for (int rank = 0; rank < numRankings; rank++ ){				
-				double rsc = Metrics.calcRankNorm(item.getPosition(rank), numRankItems);
-				item.setRankScore(rsc, rank);
+			for (int rank = 0; rank < numRankings; rank++ ){
+				int item_pos = item.getPosition(rank);
+				if (item_pos != -1){
+					double rsc = Metrics.calcRankNorm(item_pos, NumItemsToUse);
+					item.setRankScore(rsc, rank);
+				}
 			} 
 			
 			
 		}
 		
 	}
+
+	
+	
+	public void computeItemsBordaScore(){
+		
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			double bsc = 0.0;
+			for (int rank = 0; rank < numRankings; rank++ ){
+				int item_pos = item.getPosition(rank);
+				if (item_pos != -1){
+					bsc += NumItemsToUse - (item_pos -1);
+				}
+			}
+			item.setBordaScoreComplete(bsc);
+			
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
 	
 	
 	/**
@@ -371,7 +411,7 @@ public class User {
 			//Computes the value of the feature for each input ranking
 			int times_top_k = 0;
 			for (int rank = 0; rank < numRankings; rank++ ){
-				int pos_threshold = (int)(threshold * numRankItems);
+				int pos_threshold = (int)(threshold * NumItemsToUse);
 				int item_pos = item.getPosition(rank);
 						
 				if((item_pos != -1) && (item_pos <= pos_threshold))
@@ -439,6 +479,7 @@ public class User {
 		computeProbOnTopK(0.3); //TODO receive as parameter
 		computeTimesOnRanks();
 		computeAgreements(2); //TODO receive as parameter
+		computeItemsBordaScore();
 	}
 		
 	

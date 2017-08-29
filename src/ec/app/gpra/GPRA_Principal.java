@@ -20,7 +20,6 @@ import ec.Evolve;
 import ec.Individual;
 import ec.app.data.InputData;
 import ec.app.data.User;
-import ec.app.util.CombMethods;
 import ec.app.util.UtilStatistics;
 import ec.app.util.Utils;
 import ec.gp.koza.KozaFitness;
@@ -44,7 +43,9 @@ public class GPRA_Principal {
 	private static Namespace p_args = null; 
 	
 	
-	
+	public static Namespace getParameters(){
+		return p_args;
+	}
 	
 	
 	public static HashMap<String,String> get_curr_status(){
@@ -352,7 +353,16 @@ public class GPRA_Principal {
 				if (p_args.getBoolean("use_plain"))
 					dados = new InputData(plain_train, usermap, test, validacao, p_args.getInt("i2use"),p_args.getInt("i2sug"),p_args.getBoolean("use_sparse"));
 				else
-					dados = new InputData(vf,validacao,test,usermap,p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap
+					if (p_args.getBoolean("gr")){
+						//TODO isolar inicializacao do ERA para grupos
+						dados = new InputData(vf,validacao,test,usermap,
+								new File(p_args.getString("groups_file")),
+								p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap]
+						//dados.ExtractGroupFeatures(vf, new File(p_args.getString("groups_file")), test,p_args.getInt("i2use") , p_args.getInt("i2sug"));
+					}
+					else{
+						dados = new InputData(vf,validacao,test,usermap,p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap
+					}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -426,9 +436,18 @@ public class GPRA_Principal {
 				test_reeval = new File(p_args.getString("base_dir")+"reeval/"+partition+".test");
 				usermap_reeval = new File(p_args.getString("base_dir")+"reeval/"+partition+".train.map");
 				dados_reeval = new InputData(train_reeval, usermap_reeval, test_reeval, test_reeval, p_args.getInt("i2use"), p_args.getInt("i2sug"),p_args.getBoolean("use_sparse"));
-			}else{				
-				dados_reeval = new InputData(vf_reeval,test_reeval,test_reeval,
-					usermap_reeval,p_args.getInt("i2use"),p_args.getInt("i2sug"));
+			}else{
+				
+				if (p_args.getBoolean("gr")){
+					System.out.println("asdf");					
+					dados_reeval = new InputData(vf_reeval,test_reeval,test_reeval,
+							usermap_reeval,new File(p_args.getString("groups_file")),
+							p_args.getInt("i2use"),p_args.getInt("i2sug"));
+				}else
+				{
+					dados_reeval = new InputData(vf_reeval,test_reeval,test_reeval,
+						usermap_reeval,p_args.getInt("i2use"),p_args.getInt("i2sug"));
+				}
 			}
 			Vector<User> usuarios_reeval = dados_reeval.getUsers();
 

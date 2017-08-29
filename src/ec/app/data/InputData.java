@@ -8,11 +8,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
+
 
 
 //import lda_gpra.LDARA;
@@ -35,8 +37,8 @@ public class InputData {
 	
 	public Vector<User> Usuarios;
 	private int numItems;
-	private int numRankItems = 20; //alterar a entrada desse valor, ainda tem problemas com a inicialização do usuario
-	private int sizeRankings = 20; //TODO alterar, pegar esse valor como parâmetro
+	private int numItemsToUse = 20; //alterar a entrada desse valor, ainda tem problemas com a inicialização do usuario
+	//private int sizeRankings = 20; //TODO alterar, pegar esse valor como parâmetro
 	private int numRankings;
 	private int numUsersTestHasElem = 0;
 	private int numUsersValHasElem = 0;
@@ -118,8 +120,8 @@ public class InputData {
 	
 	
 	
-    private void ExtractGroupFeatures(File groupfile, Vector<File> inputs, int numItemsToUse, int numItemsToSuggest) throws FileNotFoundException{
-    
+    public void ExtractGroupFeatures(Vector<File> inputs, File groupfile, File testfile, int numItemsToUse, int numItemsToSuggest) throws FileNotFoundException{
+    	Usuarios = new Vector<User>();
     	//construct the map containing the group_ids and the users that belongs to each group
     	HashMap<Integer, Vector<Integer>>group_map = ConstructGroupMap(groupfile);
     	//read the input file correspondent to the base recommender that will be used
@@ -133,14 +135,17 @@ public class InputData {
     		
     		Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
     		int grp_size = users_in_grp.size();
-    		User grp_usr = new User(group_id,numRankings,numItemsToUse); //construct a pseudo user that represents the group
+    		User grp_usr = new User(group_id,grp_size,numItemsToUse); //construct a pseudo user that represents the group
     		Usuarios.add(grp_usr);
     		    		
     		int usr_pos_in_grp = 0;
     		for (Integer usr : users_in_grp){    			
     			int usr_position = map_user_posicao.get(usr);//take the position the user should have in the input_ranking
     			
-    			Vector<Integer> usr_ranking = input_ranking.get(usr_position);
+    			Vector<Integer> usr_ranking = new Vector<Integer>(input_ranking.get(usr_position).
+    					subList(0, numItemsToUse));
+    			
+    			
     			grp_usr.addOriginalRanking(usr_ranking); //store the ranking correspondent to the user in the group    			
     			
     			for (int item_pos = 0; item_pos < usr_ranking.size(); item_pos++){
@@ -152,16 +157,23 @@ public class InputData {
     			
     		}
     		//Chama todas as funções de calculo de feature;;;
-    		grp_usr.ComputeFeatures();
-    		
-    		
-    		
-    	} 
+    		grp_usr.ComputeFeatures();    		    		
+    	}
     	
-    	
-    	
+		readGroupsTestFile(testfile, groupfile, "test");
+
+
     }
 	
+    
+    /*public InputData(Vector<File> inputs, File groupfile, File testInput, File usermap, int numItemsToUse, int numItemsToSuggest) throws IOException{
+    	
+    	ConstructUserMaps(usermap);
+    	ExtractGroupFeatures(inputs, groupfile, numItemsToUse, numItemsToSuggest);
+    	
+    		
+    
+    }*/
     
     
 	/**
@@ -194,20 +206,7 @@ public class InputData {
 	public InputData(Vector<File> inputs, File testInput, File usermap, int numItemsToUse, int numItemsToSuggest) throws IOException{
 		
 		//*********************************************READ MAPS***********************************
-		//TODO Call the function ConstructUserMaps
-		map_posicao_user = new HashMap<Integer, Integer>();
-		map_user_posicao = new HashMap<Integer, Integer>();
-		Scanner scann = new Scanner(usermap);
-		while(scann.hasNextLine()){
-			String dados[] = scann.nextLine().split("\t");
-			int user_id = Integer.parseInt(dados[0]);
-			int user_pos = Integer.parseInt(dados[1]);
-			
-			map_posicao_user.put(user_pos, user_id);
-			map_user_posicao.put(user_id,user_pos);
-		}
-		
-		scann.close();
+		ConstructUserMaps(usermap);		
 		//***************************************END READ MAPS***************************************
 		
 		
@@ -247,14 +246,14 @@ public class InputData {
 				//controla o numero de itens usados na entrada, se o parametro passado no construtor for igual ou menor a zero usa o tamanho 
 				// da lista de entrada
 				if(numItemsToUse <= 0){
-					this.numRankItems = items.length; //seta o tamanho dos rankings
-					this.sizeRankings = items.length;
+					this.numItemsToUse = items.length; //seta o tamanho dos rankings
+					//this.sizeRankings = items.length;
 					user.setNumRankItems(items.length);
 					numItemsToUse = items.length;
 				}else
 				{
-					this.numRankItems = numItemsToUse; //seta o tamanho dos rankings
-					this.sizeRankings = numItemsToUse;
+					this.numItemsToUse = numItemsToUse; //seta o tamanho dos rankings
+					//this.sizeRankings = numItemsToUse;
 					user.setNumRankItems(numItemsToUse);
 					
 				}
@@ -272,7 +271,7 @@ public class InputData {
 					//A insercao ja verifica se o item ja existe na base
 					user.addItem(item);
 					user.setItemPosition(item, rankId, it+1);
-					user.setItemScore(item, rankId, Metrics.calcRankNorm(it+1, sizeRankings));
+					user.setItemScore(item, rankId, Metrics.calcRankNorm(it+1, numItemsToUse));
 					
 					//Calc the actual borda score, acoording to the definition score = 1/pos
 					//double d_actualborda = sizeRankings-it;//1.0/(it+1);
@@ -313,18 +312,18 @@ public class InputData {
 					else
 					{
 						float user_num_items = (float)user.getNumItems();
-						double init = 1.0 - (numRankItems-1)/(float)user.getNumItems(); //calcula o valor inicial para que os itens que nao estao no ranking nao passem dos itens que estao no ranking
-						init = init - (((numRankItems-1)/(float)(2*user.getNumItems())) + 0.005);
+						double init = 1.0 - (numItemsToUse-1)/(float)user.getNumItems(); //calcula o valor inicial para que os itens que nao estao no ranking nao passem dos itens que estao no ranking
+						init = init - (((numItemsToUse-1)/(float)(2*user.getNumItems())) + 0.005);
 						
-						double d = init + ((numRankItems-1)/(float)(2* user.getNumItems()));
+						double d = init + ((numItemsToUse-1)/(float)(2* user.getNumItems()));
 						//item.setBordaScore(d, rank_id);
 					}
 					
 					//##################################################
 					//Calcula o numero de vezes que o item está no top10
 					
-					
-					if((pos_r != -1) && (pos_r <= 0.30*this.sizeRankings))
+					//TODO pass this as parameter
+					if((pos_r != -1) && (pos_r <= 0.30*this.numItemsToUse))
 						timesTop10++;
 					
 					
@@ -352,7 +351,9 @@ public class InputData {
 			userPos++;
 		}	
 		//********************Outranking Approach****************************
-		if (GPRA_Principal.use_outrank){
+		boolean no_outrank = GPRA_Principal.getParameters().getBoolean("no_outrank"); 
+		
+		if (!no_outrank){
 			System.out.println("Calculando outrank");
 			long t = System.currentTimeMillis();
 
@@ -401,8 +402,8 @@ public class InputData {
 		map_user_posicao = new HashMap<Integer, Integer>();
 		this.use_sparse = use_sparse;
 		
-		this.numRankItems = numItemsToUse; //seta o tamanho dos rankings
-		this.sizeRankings = numItemsToUse;		
+		this.numItemsToUse = numItemsToUse; //seta o tamanho dos rankings
+		//this.sizeRankings = numItemsToUse;		
 						
 		
 		//Cada linda do arquivo tem a seguinte forma 
@@ -491,8 +492,19 @@ public class InputData {
 		this(inputs,testInput,usermap,numItemsToUse,numItemsToSugg);
 		this.numItemsToSuggest = numItemsToSugg;
 		readTestFile(validationInput, "validation");
-		free_map_user_posicao();
+		//free_map_user_posicao();
 		System.gc();
+	}
+	
+	
+	public InputData(Vector<File> inputs, File validationInput,File testInput, File usermap, File groupfile, int numItemsToUse, int numItemsToSugg) throws IOException{
+		this.numItemsToSuggest = numItemsToSugg;
+		this.numItemsToUse = numItemsToUse;
+		
+		ConstructUserMaps(usermap);
+		ExtractGroupFeatures(inputs, groupfile, testInput, numItemsToUse, numItemsToSugg);
+		readGroupsTestFile(validationInput, groupfile, "validation");
+		
 	}
 	
 	
@@ -525,7 +537,7 @@ public class InputData {
 	 * @param type - indica se o arquivo é um arquivo de teste um ou arquivo de validacao ("test","validation")
 	 * @throws FileNotFoundException
 	 */
-	
+	//TODO não esta lendo a primeira linha do arquivo CORRIGIR
 	public void readTestFile(File testInput, String type) throws FileNotFoundException{
 		
 		
@@ -662,6 +674,111 @@ public class InputData {
 	}
 	
 	
+public void readGroupsTestFile(File testInput, File groupfile, String type) throws FileNotFoundException{
+		
+		
+		//System.out.println("Teste");
+		Scanner sc = new Scanner(testInput);
+		HashMap<Integer, Vector<Integer>> testRankings_aux = new HashMap<Integer, Vector<Integer>>();
+		int usr = 0, usr_ant = 0;
+		
+		String line[] = sc.nextLine().split("\t");
+		usr = Integer.parseInt(line[0]);
+		int item = Integer.parseInt(line[1]);
+		int value = Integer.parseInt(line[2]);
+		usr_ant = usr;
+		
+		
+		int usr_i = map_user_posicao.get(usr);
+		while(sc.hasNext()){
+			
+			usr_ant = usr;
+			line = sc.nextLine().split("\t");
+			int userx = Integer.parseInt(line[0]);
+			while (!map_user_posicao.containsKey(userx)){
+				System.err.println("Does not contain user "+userx);
+				line = sc.nextLine().split("\t");
+				userx = Integer.parseInt(line[0]);
+				continue;
+			}
+			usr = Integer.parseInt(line[0]);
+			item = Integer.parseInt(line[1]);
+			
+			
+			//TODO deletar
+			if(!testRankings_aux.containsKey(usr)){
+				
+				testRankings_aux.put(usr, new Vector<Integer>());
+				testRankings_aux.get(usr).add(item);
+			}
+			else{
+				testRankings_aux.get(usr).add(item);
+			}			
+			
+		}
+
+		//LAST ELEMENT
+		//
+		if(!testRankings_aux.containsKey(usr)){
+			
+			testRankings_aux.put(usr, new Vector<Integer>());
+			testRankings_aux.get(usr).add(item);
+		}
+		else{
+			testRankings_aux.get(usr).add(item);
+		}
+		
+		sc.close();
+		
+		//TODO receive groupmap as parameter or put this in the global features
+		HashMap<Integer,Vector<Integer>> group_map = ConstructGroupMap(groupfile);
+		
+		for (Integer grp_id : group_map.keySet()){
+			Vector<Integer> users_in_grp = group_map.get(grp_id);
+			int first_usr = users_in_grp.firstElement();
+			
+			HashSet<Integer> item_intersection = new HashSet<Integer>();
+			//if the user has no items in the test set, it means that the intersection for this group
+			//will be zero. We guarantee this when we initialize the first user with an empty set.
+			if(testRankings_aux.containsKey(users_in_grp.firstElement())){
+				item_intersection = new HashSet<Integer>(testRankings_aux.get(first_usr));
+			}
+			
+			for (int usr_pos = 1; usr_pos < users_in_grp.size(); usr_pos++){
+				System.out.println(users_in_grp.get(usr_pos));
+				//Construct the intersection between the items in the test set for all the group members 
+				Vector<Integer > test_curr_usr = new Vector<Integer>();
+				//if the user has no items in the test set, it means that the intersection for this group
+				//will be zero. We guarantee this when we mantain the test_curr_usr empty.
+				if(testRankings_aux.containsKey(users_in_grp.get(usr_pos))){
+					test_curr_usr = testRankings_aux.get(users_in_grp.get(usr_pos));
+				}
+				item_intersection.retainAll(test_curr_usr);
+			}
+			
+			if (type.contains("test")){
+				Usuarios.get(grp_id).setTestRanking(new Vector<Integer>(item_intersection));
+				if (item_intersection.size() > 0){
+					numUsersTestHasElem++;
+				}			
+			}else{
+				Usuarios.get(grp_id).setValidationRanking(new Vector<Integer>(item_intersection));
+				if (item_intersection.size() > 0){
+					numUsersValHasElem++;
+				}
+			}						
+			
+			
+		}
+		
+		
+		
+		
+	}
+	
+	
+	
+	
 	public boolean UsingSparse(){
 		return use_sparse;
 	}
@@ -693,14 +810,14 @@ public class InputData {
 		numRankings = nRank;
 	}
 	
-	public void setSizeRankings(int sizeR){
+	/*public void setSizeRankings(int sizeR){
 		
 		sizeRankings = sizeR;
-	}
+	}*/
 	
 	public int getNumRankItems()
 	{
-		return numRankItems;
+		return numItemsToUse;
 	}
 	
 	public int getNumItemsToSuggest(){

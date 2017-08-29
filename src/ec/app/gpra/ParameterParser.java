@@ -129,7 +129,18 @@ public class ParameterParser {
 				.action(storeTrue())
 				.help("Dissable GP execution. "
 						+ "Can be used to just save the atributes or to reeval the individuals");
+
+        //it makes no sense to set the default as true and use the action store_true
+        //however, i'm using this just to store the value true for this parameter
+        //
+        parser.addArgument("--no_outrank")
+				.type(Boolean.class)
+				.setDefault(false)
+				.action(storeTrue())
+				.help("Dissable the construction of the feature Outrank.");
        
+
+        
         parser.addArgument("--use_sparse")
 				.type(Boolean.class)
 				.setDefault(false)
@@ -159,6 +170,21 @@ public class ParameterParser {
 				.setDefault(false)
 				.action(storeTrue())
 				.help("Enables the use of a plain dataset containing all the features already computed");
+
+        
+        parser.addArgument("--gr")
+				.type(Boolean.class)
+				.setDefault(false)
+				.action(storeTrue())
+				.help("Run the ERA to the Group Recomendation problem. When enabled one needs to set"
+						+ "the file containing the groups");
+
+        parser.addArgument("--groups_file")
+		.setDefault("")
+        .type(String.class)
+        .help("File contaning the groups information");
+
+        
         
         parser.addArgument("--used_atts").nargs("+")
 				.type(Integer.class)				

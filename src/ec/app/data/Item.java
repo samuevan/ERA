@@ -24,6 +24,8 @@ public class Item{
 	private Vector<Double> genericDoubles;
 	private boolean useGenericValues = false;
 	private boolean use_sparse;
+	private double bordaScoreComplete = 0; //The sum of the borda scores for all rankings
+	
 	
 	//TODO Posso armazenar somente os indices das categorias as quais o filme pertence
 
@@ -139,6 +141,15 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	 */
 	public double getBordaScore(int rankPos){
 		return bordaScores.get(rankPos);
+	}
+	
+	
+	public double getBordaScoreComplete(){
+		return bordaScoreComplete;
+	}
+	
+	public void setBordaScoreComplete(double bsc){
+		bordaScoreComplete = bsc;
 	}
 	
 	
