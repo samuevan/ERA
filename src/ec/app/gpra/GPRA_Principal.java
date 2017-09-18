@@ -332,19 +332,21 @@ public class GPRA_Principal {
 			//Carrega os arquivos de teste, validacao e o arquivo que mapeia a o ID de cada usuario pela
 			//posicao que este usuario aparece nos arquivos de treino e teste
 			File test;
+			File base;
 			File validacao;
 			File usermap;
 			File plain_train = null;
 			if (p_args.getBoolean("use_plain")){
+				base = new File(p_args.getString("base_dir")+partition+".train");
 				test = new File(p_args.getString("base_dir")+partition+".test");
 				validacao = new File(p_args.getString("base_dir")+partition+".validation");
 				usermap = new File(p_args.getString("base_dir")+partition+".train.map");
 				plain_train = new File(p_args.getString("base_dir")+partition+".plain.train");
 	
 			}
-			else{
-			
+			else{				
 				test = new File(p_args.getString("base_dir")+partition+".test");
+				base = new File(p_args.getString("base_dir")+partition+".base");
 				validacao = new File(p_args.getString("base_dir")+partition+".validation");
 				usermap = new File(p_args.getString("base_dir")+partition+".base.usermap");
 			}
@@ -355,7 +357,7 @@ public class GPRA_Principal {
 				else
 					if (p_args.getBoolean("gr")){
 						//TODO isolar inicializacao do ERA para grupos
-						dados = new InputData(vf,validacao,test,usermap,
+						dados = new InputData(vf,base,validacao,test,usermap,
 								new File(p_args.getString("groups_file")),
 								p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap]
 						//dados.ExtractGroupFeatures(vf, new File(p_args.getString("groups_file")), test,p_args.getInt("i2use") , p_args.getInt("i2sug"));
@@ -427,7 +429,7 @@ public class GPRA_Principal {
 				vf_reeval.add(new File(p_args.getString("base_dir")+"reeval/"+partition+"-"+input_rank));
 			}
 
-
+			File base_reeval = new File(p_args.getString("base_dir")+"reeval/"+partition+".base");
 			File test_reeval = new File(p_args.getString("base_dir")+"reeval/"+partition+".test");					
 			File usermap_reeval = new File(p_args.getString("base_dir")+"reeval/"+partition+".base.usermap");
 			InputData dados_reeval;
@@ -440,7 +442,7 @@ public class GPRA_Principal {
 				
 				if (p_args.getBoolean("gr")){
 					System.out.println("asdf");					
-					dados_reeval = new InputData(vf_reeval,test_reeval,test_reeval,
+					dados_reeval = new InputData(vf_reeval,base_reeval,test_reeval,test_reeval,
 							usermap_reeval,new File(p_args.getString("groups_file")),
 							p_args.getInt("i2use"),p_args.getInt("i2sug"));
 				}else

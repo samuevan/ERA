@@ -116,11 +116,25 @@ public class InputData {
 	}
 	
 	
+	private HashSet<Integer> itemsUnion(Vector<Integer> users_in_grp, HashMap<Integer,Vector<Integer>> train_ratings){
+		
+		HashSet<Integer> items_union = new HashSet<Integer>();
+		int first_usr_pos = users_in_grp.firstElement();
+		items_union.addAll(train_ratings.get(first_usr_pos));
+		
+		for (int i = 1; i < users_in_grp.size(); i++){
+			
+			int usr_pos = users_in_grp.get(i);
+			items_union.addAll(train_ratings.get(usr_pos));						
+		} 
+		
+		
+		return items_union;
+	}
 	
 	
 	
-	
-    public void ExtractGroupFeatures(Vector<File> inputs, File groupfile, File testfile, int numItemsToUse, int numItemsToSuggest) throws FileNotFoundException{
+    public void ExtractGroupFeatures(Vector<File> inputs, File groupfile, File train_ratings_file, File test_file,  int numItemsToUse, int numItemsToSuggest) throws FileNotFoundException{
     	Usuarios = new Vector<User>();
     	//construct the map containing the group_ids and the users that belongs to each group
     	HashMap<Integer, Vector<Integer>>group_map = ConstructGroupMap(groupfile);
@@ -128,16 +142,26 @@ public class InputData {
     	//in the future we can use more than one ranking as input, therefore the function signature 
     	//receives a vector of files
     	Vector<Vector<Integer>> input_ranking =	LoadInputRanking(inputs.get(0));
+    	//read the *.base files. The files that contains the ratings given by the users and are used to train the base recommenders
+    	HashMap<Integer,Vector<Integer>> train_ratings = readRatingsFile(train_ratings_file);
     	
     	
     	
     	for(Integer group_id : group_map.keySet()){
+    		
+    		if (group_id == 548)
+    			System.out.println("Verificar numero de items");
+    		
     		
     		Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
     		int grp_size = users_in_grp.size();
     		User grp_usr = new User(group_id,grp_size,numItemsToUse); //construct a pseudo user that represents the group
     		Usuarios.add(grp_usr);
     		    		
+    		//gets the items already rated by the group's users in the training matrix
+    		//it avoids including an item already rated(and that will not appear in the test) 
+    		//in the group ranking
+    		HashSet<Integer> group_train_items = itemsUnion(users_in_grp, train_ratings);
     		int usr_pos_in_grp = 0;
     		for (Integer usr : users_in_grp){    			
     			int usr_position = map_user_posicao.get(usr);//take the position the user should have in the input_ranking
@@ -147,20 +171,27 @@ public class InputData {
     			
     			
     			grp_usr.addOriginalRanking(usr_ranking); //store the ranking correspondent to the user in the group    			
+    			Vector<Integer> original_ranking = new Vector<Integer>(usr_ranking);
+    			usr_ranking.removeAll(group_train_items); //remove the items already rated by any group user
     			
     			for (int item_pos = 0; item_pos < usr_ranking.size(); item_pos++){
-    				int item_id = usr_ranking.get(item_pos);  
+    				int item_id = usr_ranking.get(item_pos);     				
     				grp_usr.addItem(item_id);
-    				grp_usr.setItemPosition(item_id, usr_pos_in_grp, item_pos+1);
+    				int original_item_pos = original_ranking.indexOf(item_id);
+    				//TODO possivel fonte de problema. EStou pegando a posicao do item depois de remover os items que estavam na uniao dos usuarios
+    				//Dessa forma, aqui estou pegando a posicao do item depois dessa remocao, o que nao é a posicao real do item no ranking de entrada para este usuario
+    				//grp_usr.setItemPosition(item_id, usr_pos_in_grp, item_pos+1);
+    				grp_usr.setItemPosition(item_id, usr_pos_in_grp, original_item_pos+1);
     				//grp_usr.setItemScore(item_id, usr_pos_in_grp, Metrics.calcRankNorm(it+1, sizeRankings));
     			}    			    			
     			
+    			usr_pos_in_grp++;
     		}
     		//Chama todas as funções de calculo de feature;;;
     		grp_usr.ComputeFeatures();    		    		
     	}
     	
-		readGroupsTestFile(testfile, groupfile, "test");
+		readGroupsTestFile(test_file, groupfile, "test");
 
 
     }
@@ -497,12 +528,12 @@ public class InputData {
 	}
 	
 	
-	public InputData(Vector<File> inputs, File validationInput,File testInput, File usermap, File groupfile, int numItemsToUse, int numItemsToSugg) throws IOException{
+	public InputData(Vector<File> inputs,File train_ratings_file,  File validationInput,File testInput, File usermap, File groupfile, int numItemsToUse, int numItemsToSugg) throws IOException{
 		this.numItemsToSuggest = numItemsToSugg;
 		this.numItemsToUse = numItemsToUse;
 		
 		ConstructUserMaps(usermap);
-		ExtractGroupFeatures(inputs, groupfile, testInput, numItemsToUse, numItemsToSugg);
+		ExtractGroupFeatures(inputs, groupfile, train_ratings_file, testInput, numItemsToUse, numItemsToSugg);
 		readGroupsTestFile(validationInput, groupfile, "validation");
 		
 	}
@@ -673,6 +704,67 @@ public class InputData {
 		
 	}
 	
+public HashMap<Integer, Vector<Integer>> readRatingsFile(File ratingsFile) throws FileNotFoundException{
+	
+	//System.out.println("Teste");
+	Scanner sc = new Scanner(ratingsFile);
+	HashMap<Integer, Vector<Integer>> ratings_map = new HashMap<Integer, Vector<Integer>>();
+	int usr = -1; //, usr_ant = 0;
+	
+	String line[]; //= sc.nextLine().split("\t");
+	//usr = Integer.parseInt(line[0]);
+	int item = -1; //= Integer.parseInt(line[1]);
+	int value; //= Integer.parseInt(line[2]);
+	//usr_ant = usr;
+	
+	
+	//int usr_i = map_user_posicao.get(usr);
+	while(sc.hasNext()){
+		
+		//usr_ant = usr;
+		line = sc.nextLine().split("\t");
+		int userx = Integer.parseInt(line[0]);
+		while (!map_user_posicao.containsKey(userx)){
+			System.err.println("Does not contain user "+userx);
+			line = sc.nextLine().split("\t");
+			userx = Integer.parseInt(line[0]);
+			continue;
+		}
+		usr = Integer.parseInt(line[0]);
+		item = Integer.parseInt(line[1]);
+		
+		
+		//TODO deletar
+		if(!ratings_map.containsKey(usr)){
+			
+			ratings_map.put(usr, new Vector<Integer>());
+			ratings_map.get(usr).add(item);
+		}
+		else{
+			ratings_map.get(usr).add(item);
+		}			
+		
+	}
+
+	//LAST ELEMENT
+	// This piece of code is note necessary
+	/*if(!ratings_map.containsKey(usr)){
+		
+		ratings_map.put(usr, new Vector<Integer>());
+		ratings_map.get(usr).add(item);
+	}
+	else{
+		ratings_map.get(usr).add(item);
+	}*/
+	
+	sc.close();
+	
+	return ratings_map;
+	
+	
+	
+}
+	
 	
 public void readGroupsTestFile(File testInput, File groupfile, String type) throws FileNotFoundException{
 		
@@ -680,19 +772,19 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 		//System.out.println("Teste");
 		Scanner sc = new Scanner(testInput);
 		HashMap<Integer, Vector<Integer>> testRankings_aux = new HashMap<Integer, Vector<Integer>>();
-		int usr = 0, usr_ant = 0;
+		int usr = -1;//, usr_ant = 0;
 		
-		String line[] = sc.nextLine().split("\t");
-		usr = Integer.parseInt(line[0]);
-		int item = Integer.parseInt(line[1]);
-		int value = Integer.parseInt(line[2]);
-		usr_ant = usr;
+		String line[];// = sc.nextLine().split("\t");
+		//usr = Integer.parseInt(line[0]);
+		int item = -1;//Integer.parseInt(line[1]);
+		int value;// = Integer.parseInt(line[2]);
+		//usr_ant = usr;
 		
 		
-		int usr_i = map_user_posicao.get(usr);
+		//int usr_i = map_user_posicao.get(usr);
 		while(sc.hasNext()){
 			
-			usr_ant = usr;
+			//usr_ant = usr;
 			line = sc.nextLine().split("\t");
 			int userx = Integer.parseInt(line[0]);
 			while (!map_user_posicao.containsKey(userx)){
@@ -705,7 +797,6 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 			item = Integer.parseInt(line[1]);
 			
 			
-			//TODO deletar
 			if(!testRankings_aux.containsKey(usr)){
 				
 				testRankings_aux.put(usr, new Vector<Integer>());
@@ -718,15 +809,15 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 		}
 
 		//LAST ELEMENT
-		//
-		if(!testRankings_aux.containsKey(usr)){
+		// This is not necessary
+		/*if(!testRankings_aux.containsKey(usr)){
 			
 			testRankings_aux.put(usr, new Vector<Integer>());
 			testRankings_aux.get(usr).add(item);
 		}
 		else{
 			testRankings_aux.get(usr).add(item);
-		}
+		}*/
 		
 		sc.close();
 		

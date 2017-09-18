@@ -85,7 +85,7 @@ public class GPRA_Problem extends GPProblem implements
 		
 		DoubleData input = (DoubleData) (this.input);
 
-		int numItemsToEval = dados.getNumRankItems();
+		//int numItemsToEval = dados.getNumRankItems();
 		int numItemsToSuggest = dados.getNumItemsToSuggest();
 		int numItemsToUse = dados.getNumRankItems();
 		numUsedRanks = dados.getNumRankings();
@@ -169,7 +169,7 @@ public class GPRA_Problem extends GPProblem implements
 			
 			DoubleData input = (DoubleData) (this.input);
 
-			int numItemsToEval = dados.getNumRankItems();
+			//int numItemsToEval = dados.getNumRankItems();
 			int numItemsToSuggest = dados.getNumItemsToSuggest();
 			int numItemsToUse = dados.getNumRankItems();
 			//I'm taking the number of rankings from the user, 
@@ -207,6 +207,7 @@ public class GPRA_Problem extends GPProblem implements
 				
 				Iterator<Integer> item_iter = curr_user.getItemIterator();
 				
+
 				
 				
 				while(item_iter.hasNext()){
@@ -262,6 +263,24 @@ public class GPRA_Problem extends GPProblem implements
 					//insertInOrder(new Pair<Integer,Double>(item.getItemId(), newScore), saida);//Insere o item e o novo ranking
 					Utils.insertInOrder(item_key,newScore,saida_items,saida_scores);
 				}
+				
+				
+				//This guarantess that any output ranking will always have a minimum size of numItemsToSuggest
+				//by adding fake items at the end of a ranking if it does not have the minimum size
+				if (saida_items.size() < numItemsToSuggest){
+					int num_to_intersert = numItemsToSuggest - saida_items.size();
+					double smallest = saida_scores.lastElement();
+					for (int i = 0; i < num_to_intersert; i++){
+						saida_items.add(9999999);
+						saida_scores.add(smallest - 100);
+					}
+				}
+				
+				
+				
+				
+				
+				
 				long siz = ind.size();
 				Vector<Integer> user_hits = new Vector<Integer>();
 				double prec_test_aux = Metrics.precision(curr_user.getTestRanking(), saida_items,null,numItemsToSuggest);
@@ -293,9 +312,9 @@ public class GPRA_Problem extends GPProblem implements
 				
 				
 				int hitsx_sug = Metrics.numHits(saida_items, curr_user.getValidationRanking(), numItemsToSuggest);
-				int hitsx_use = Metrics.numHits(saida_items, curr_user.getValidationRanking(), numItemsToEval);
+				//int hitsx_use = Metrics.numHits(saida_items, curr_user.getValidationRanking(), numItemsToEval);
 				mean_hits_sug += hitsx_sug;
-				mean_hits_use += hitsx_use;
+				//mean_hits_use += hitsx_use;
 				prec_test += prec_test_aux;
 				prec_val += prec_val_aux;
 				

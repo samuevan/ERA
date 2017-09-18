@@ -151,7 +151,6 @@ public class Metrics {
 		double avg_prec = 0.0;
 		
 		
-		
 		//Considerando somente os 100 primeiros
 		for(int i = 0; i < numItemsToEval; i++){ //int i = 0; i < rankingToEval.size(); i++
 			int kx = rankingToEval.get(i);
