@@ -708,7 +708,7 @@ public class GPRA_Principal {
 							new FileWriter(p_args.getString("out_dir")+partition+"run"+run+"_GPRA.out")));
 
 					for (User u : usuarios_reeval){
-						print_ranking.write(u.print_gpra_ranking(p_args.getInt("i2use"))+"\n");
+						print_ranking.write(u.print_gpra_ranking(p_args.getInt("i2sug"))+"\n");
 					}
 
 					print_ranking.close();

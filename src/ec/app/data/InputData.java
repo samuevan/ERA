@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
+
 
 
 
@@ -145,9 +147,12 @@ public class InputData {
     	//read the *.base files. The files that contains the ratings given by the users and are used to train the base recommenders
     	HashMap<Integer,Vector<Integer>> train_ratings = readRatingsFile(train_ratings_file);
     	
+    	Integer[] group_ids_sorted = new Integer[group_map.keySet().size()];  
+    	group_ids_sorted = group_map.keySet().toArray(group_ids_sorted);
+    	Arrays.sort(group_ids_sorted);
     	
     	
-    	for(Integer group_id : group_map.keySet()){
+    	for(Integer group_id : group_ids_sorted){//group_map.keySet()){
     		
     		if (group_id == 548)
     			System.out.println("Verificar numero de items");
