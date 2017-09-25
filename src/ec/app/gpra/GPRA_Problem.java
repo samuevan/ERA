@@ -48,6 +48,9 @@ public class GPRA_Problem extends GPProblem implements
 	public int timesOnRankings = 0;
 	public double outrank_score = 0;
 	public double bordaComplete = 0;
+	public double combSUM = 0;
+	public double combMNZ = 0;
+	public double RRF = 0;
 	
 	public void setup(final EvolutionState state, final Parameter base) {
 		
@@ -251,6 +254,11 @@ public class GPRA_Problem extends GPProblem implements
 					meanAgreements = item.getMeanAgreements();
 					bordaComplete = item.getBordaScoreComplete();
 
+					combMNZ = item.getCombMNZ();
+					combSUM = item.getCombSUM();
+					RRF = item.getRRF();
+					
+					
 					//categorie_score = item.get_categories_score();
 					
 					

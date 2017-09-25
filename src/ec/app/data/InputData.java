@@ -153,11 +153,8 @@ public class InputData {
     	
     	
     	for(Integer group_id : group_ids_sorted){//group_map.keySet()){
-    		
-    		if (group_id == 548)
-    			System.out.println("Verificar numero de items");
-    		
-    		
+    		    		
+    		    		
     		Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
     		int grp_size = users_in_grp.size();
     		User grp_usr = new User(group_id,grp_size,numItemsToUse); //construct a pseudo user that represents the group

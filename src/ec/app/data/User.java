@@ -6,6 +6,7 @@ import java.util.Vector;
 
 import ec.app.util.Metrics;
 import ec.app.util.Pair;
+import ec.app.util.Utils;
 
 
 public class User {
@@ -227,10 +228,16 @@ public class User {
 		return NumItemsToUse;
 	}
 	
-	/*public void addNewRanking(Vector<Integer> newRanking){
-		
-	}*/
 	
+	/**
+	 * Inserts a new ranking and compute some features during the reading time
+	 * It is used just to compute unsupervised rank aggregation methods (like Comb* and outrank) 
+	 * in reading time
+	 * 
+	 * Not used anymore
+	 * 
+	 * @param newRanking
+	 */
 	public void addNewRanking(Vector<Integer> newRanking){
 		
 		this.originalRankings2.add(new Vector<Integer>());
@@ -390,6 +397,81 @@ public class User {
 	}
 	
 	
+	public void computeItemsRRF(int k){
+		
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			double rrf = 0.0;
+			for (int rank = 0; rank < numRankings; rank++ ){
+				int item_pos = item.getPosition(rank);
+				if (item_pos != -1){
+					rrf += 1.0/(item_pos + k);
+				}
+			}
+			item.setRRF(rrf);
+			
+		}
+		
+	}
+	
+	
+	public void computeCombSUM(){
+
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			double score = 0.0;
+			for (int rank = 0; rank < numRankings; rank++ ){
+				int item_pos = item.getPosition(rank);
+				if (item_pos != -1){
+					score += 1.0 - (item_pos-1.0)/this.getNumRankItems();
+				}
+			}
+			item.setCombSUM(score);
+			
+		}
+		
+
+	}	
+	
+	public void computeCombMNZ(){
+
+		//For each item recommended to the user
+		for(Integer item_id : Items.keySet()){			
+			
+			Item item = Items.get(item_id);
+			//Computes the value of the feature for each input ranking
+			double score = 0.0;
+			int times_on_rank = 0;
+			for (int rank = 0; rank < numRankings; rank++ ){
+				int item_pos = item.getPosition(rank);
+				if (item_pos != -1){
+					score += 1.0 - (item_pos-1.0)/this.getNumRankItems();
+					times_on_rank++;
+				}
+			}
+			score *= times_on_rank; 
+			item.setCombMNZ(score);
+			
+		}
+		
+
+	}	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -480,6 +562,9 @@ public class User {
 		computeTimesOnRanks();
 		computeAgreements(2); //TODO receive as parameter
 		computeItemsBordaScore();
+		computeCombMNZ();
+		computeCombSUM();
+		computeItemsRRF(60);
 	}
 		
 	

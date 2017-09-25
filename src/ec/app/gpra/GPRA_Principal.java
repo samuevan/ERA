@@ -294,10 +294,14 @@ public class GPRA_Principal {
 		
 		//vetores com os melhores individuos por rodada e por particao
 		best_individuals_by_run = new Vector<Individual>(p_args.getInt("nruns"));
-		best_individuals_by_part = new Vector<Individual>(p_args.getInt("nruns"));
-		for(int ii = 0 ; ii < p_args.getInt("nruns"); ii++){
-			best_individuals_by_part.add(null);
+		for(int ii = 0 ; ii < p_args.getInt("nruns"); ii++){		
 			best_individuals_by_run.add(null);
+		}
+		
+		best_individuals_by_part = new Vector<Individual>(p_args.getInt("nruns"));
+		for(int ii = 0 ; ii < (p_args.getInt("pend")-p_args.getInt("pini")+1); ii++){
+			best_individuals_by_part.add(null);
+		
 		}
 			
 		
@@ -702,11 +706,18 @@ public class GPRA_Principal {
 					System.out.println(inds[0].fitness.fitnessToStringForHumans());
 
 					out_reeval.close();
-
-
-					PrintWriter print_ranking = new PrintWriter(new BufferedWriter(
-							new FileWriter(p_args.getString("out_dir")+partition+"run"+run+"_GPRA.out")));
-
+					PrintWriter print_ranking;
+					
+					if (p_args.getBoolean("gr"))
+					{
+						print_ranking = new PrintWriter(new BufferedWriter(
+							new FileWriter(p_args.getString("out_dir")+partition+"run"+run+"_GPRA.gout")));
+					}
+					else{
+						print_ranking = new PrintWriter(new BufferedWriter(
+								new FileWriter(p_args.getString("out_dir")+partition+"run"+run+"_GPRA.out")));
+					}
+					
 					for (User u : usuarios_reeval){
 						print_ranking.write(u.print_gpra_ranking(p_args.getInt("i2sug"))+"\n");
 					}

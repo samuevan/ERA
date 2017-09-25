@@ -25,7 +25,9 @@ public class Item{
 	private boolean useGenericValues = false;
 	private boolean use_sparse;
 	private double bordaScoreComplete = 0; //The sum of the borda scores for all rankings
-	
+	private double combSUMscore;
+	private double combMNZscore;
+	private double RRFscore;
 	
 	//TODO Posso armazenar somente os indices das categorias as quais o filme pertence
 
@@ -292,5 +294,33 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	public double getMeanAgreements(){
 		return meanAgreements;
 	}
+	
+	
+	public void setRRF(double rrf){
+		this.RRFscore = rrf;
+	}
+	
+	public double getRRF(){
+		return this.RRFscore;
+	}
+	
+	
+	public void setCombSUM(double sum){
+		this.combSUMscore = sum;
+	}
+	
+	public double getCombSUM(){
+		return this.combSUMscore;
+	}
+	
+	
+	public void setCombMNZ(double mnz){
+		this.combMNZscore = mnz;
+	}
+	
+	public double getCombMNZ(){
+		return this.combMNZscore;
+	}
+	
 
 }
