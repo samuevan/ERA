@@ -128,23 +128,23 @@ gp.fs.0.func.9 = ec.app.gpra.terminals.OutrankScore
 gp.fs.0.func.9.nc = nc0
 
 
-gp.fs.0.func.10 = ec.app.gpra.terminals.BordaComplete
-gp.fs.0.func.10.nc = nc0
-gp.fs.0.func.11 = ec.app.gpra.terminals.MNZ
-gp.fs.0.func.11.nc = nc0
-gp.fs.0.func.12 = ec.app.gpra.terminals.SUM
-gp.fs.0.func.12.nc = nc0
-gp.fs.0.func.13 = ec.app.gpra.terminals.RRF
-gp.fs.0.func.13.nc = nc0
-
-#gp.fs.0.func.10 = ec.app.gpra.terminals.Score0
+#gp.fs.0.func.10 = ec.app.gpra.terminals.BordaComplete
 #gp.fs.0.func.10.nc = nc0
-#gp.fs.0.func.11 = ec.app.gpra.terminals.Score1
+#gp.fs.0.func.11 = ec.app.gpra.terminals.MNZ
 #gp.fs.0.func.11.nc = nc0
-#gp.fs.0.func.12 = ec.app.gpra.terminals.Score2
+#gp.fs.0.func.12 = ec.app.gpra.terminals.SUM
 #gp.fs.0.func.12.nc = nc0
-#gp.fs.0.func.13 = ec.app.gpra.terminals.Score3
+#gp.fs.0.func.13 = ec.app.gpra.terminals.RRF
 #gp.fs.0.func.13.nc = nc0
+
+gp.fs.0.func.10 = ec.app.gpra.terminals.Score0
+gp.fs.0.func.10.nc = nc0
+gp.fs.0.func.11 = ec.app.gpra.terminals.Score1
+gp.fs.0.func.11.nc = nc0
+gp.fs.0.func.12 = ec.app.gpra.terminals.Score2
+gp.fs.0.func.12.nc = nc0
+gp.fs.0.func.13 = ec.app.gpra.terminals.Score3
+gp.fs.0.func.13.nc = nc0
 #gp.fs.0.func.14 = ec.app.gpra.terminals.Score4
 #gp.fs.0.func.14.nc = nc0
 #gp.fs.0.func.15 = ec.app.gpra.terminals.Score5
