@@ -1,0 +1,189 @@
+Num Generations:10
+Num Individuals: 10
+Xover Prob: 0.65
+Mutation Prob: 0.35
+Reproduction Prob: 0.1
+Max Tree Size: 10
+Num Itens to Use: 20
+Num Itens to Suggest: 10
+Max Gen. Without Improve: 50
+
+Generation 0:
+Terminals: {}
+Average Fitness: 0.8528411774173386
+Average Fitness Validation: 0.8528411774173386
+Average Fitness Test: 0.8535102688283434
+Best Fitness Validation: 0.7870869285743063
+Best Hits: 2.0329949855804443
+Best Hits_use: 2.0329949855804443
+Best Fitness Test: 0.7843867723109171
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 1:
+Terminals: {}
+Average Fitness: 0.7917195450456458
+Average Fitness Validation: 0.7917195450456458
+Average Fitness Test: 0.7935191152673704
+Best Fitness Validation: 0.7735255415382924
+Best Hits: 2.1129441261291504
+Best Hits_use: 2.1129441261291504
+Best Fitness Test: 0.7755254059698704
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 2:
+Terminals: {}
+Average Fitness: 0.7896507929713531
+Average Fitness Validation: 0.7896507929713531
+Average Fitness Test: 0.7966145957830866
+Best Fitness Validation: 0.772811366532889
+Best Hits: 2.114213228225708
+Best Hits_use: 2.114213228225708
+Best Fitness Test: 0.7792188115493425
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 3:
+Terminals: {}
+Average Fitness: 0.7820902356924159
+Average Fitness Validation: 0.7820902356924159
+Average Fitness Test: 0.785220311275008
+Best Fitness Validation: 0.772811366532889
+Best Hits: 2.114213228225708
+Best Hits_use: 2.114213228225708
+Best Fitness Test: 0.7792188115493425
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 4:
+Terminals: {}
+Average Fitness: 0.7768894300235136
+Average Fitness Validation: 0.7768894300235136
+Average Fitness Test: 0.7820316625404626
+Best Fitness Validation: 0.7715112052176578
+Best Hits: 2.114213228225708
+Best Hits_use: 2.114213228225708
+Best Fitness Test: 0.7780801724948301
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 5:
+Terminals: {}
+Average Fitness: 0.7755260343327031
+Average Fitness Validation: 0.7755260343327031
+Average Fitness Test: 0.7819699471147267
+Best Fitness Validation: 0.7715112052176578
+Best Hits: 2.114213228225708
+Best Hits_use: 2.114213228225708
+Best Fitness Test: 0.7780801724948301
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 6:
+Terminals: {}
+Average Fitness: 0.7930059627124493
+Average Fitness Validation: 0.7930059627124493
+Average Fitness Test: 0.7996986215065555
+Best Fitness Validation: 0.7715112052176578
+Best Hits: 2.1104061603546143
+Best Hits_use: 2.1104061603546143
+Best Fitness Test: 0.7780801724948301
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 7:
+Terminals: {}
+Average Fitness: 0.7788299309336446
+Average Fitness Validation: 0.7788299309336446
+Average Fitness Test: 0.7857564228137673
+Best Fitness Validation: 0.7715112052176578
+Best Hits: 2.1104061603546143
+Best Hits_use: 2.1104061603546143
+Best Fitness Test: 0.7780801724948301
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 8:
+Terminals: {}
+Average Fitness: 0.7802909145656761
+Average Fitness Validation: 0.7802909145656761
+Average Fitness Test: 0.7875166669224563
+Best Fitness Validation: 0.7715112052176578
+Best Hits: 2.1104061603546143
+Best Hits_use: 2.1104061603546143
+Best Fitness Test: 0.7780801724948301
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
+
+Generation 9:
+Terminals: {}
+Average Fitness: 0.7790369689330895
+Average Fitness Validation: 0.7790369689330895
+Average Fitness Test: 0.7868187927408228
+Best Fitness Validation: 0.7715112052176578
+Best Hits: 2.1104061603546143
+Best Hits_use: 2.1104061603546143
+Best Fitness Test: 0.7780801724948301
+Best prec@5 Test: 0.0
+Best prec@10 Test: 0.0
+Best prec@5 Val: 0.0
+Best prec@10 Val: 0.0
+Best map@5 Test: 0.0
+Best map@10 Test: 0.0
+Best map@5 Val: 0.0
+Best map@10 Val: 0.0
