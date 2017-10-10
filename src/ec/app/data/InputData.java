@@ -140,10 +140,7 @@ public class InputData {
     	Usuarios = new Vector<User>();
     	//construct the map containing the group_ids and the users that belongs to each group
     	HashMap<Integer, Vector<Integer>>group_map = ConstructGroupMap(groupfile);
-    	//read the input file correspondent to the base recommender that will be used
-    	//in the future we can use more than one ranking as input, therefore the function signature 
-    	//receives a vector of files
-    	Vector<Vector<Integer>> input_ranking =	LoadInputRanking(inputs.get(0));
+    	
     	//read the *.base files. The files that contains the ratings given by the users and are used to train the base recommenders
     	HashMap<Integer,Vector<Integer>> train_ratings = readRatingsFile(train_ratings_file);
     	
@@ -152,45 +149,64 @@ public class InputData {
     	Arrays.sort(group_ids_sorted);
     	
     	
-    	for(Integer group_id : group_ids_sorted){//group_map.keySet()){
-    		    		
-    		    		
-    		Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
-    		int grp_size = users_in_grp.size();
-    		User grp_usr = new User(group_id,grp_size,numItemsToUse); //construct a pseudo user that represents the group
-    		Usuarios.add(grp_usr);
-    		    		
-    		//gets the items already rated by the group's users in the training matrix
-    		//it avoids including an item already rated(and that will not appear in the test) 
-    		//in the group ranking
-    		HashSet<Integer> group_train_items = itemsUnion(users_in_grp, train_ratings);
-    		int usr_pos_in_grp = 0;
-    		for (Integer usr : users_in_grp){    			
-    			int usr_position = map_user_posicao.get(usr);//take the position the user should have in the input_ranking
+    	int pos_input_ranking = 0;
+    	for (File input_ranking_file : inputs){ 
+
+    		//read the input file correspondent to the base recommender that will be used
+    		//in the future we can use more than one ranking as input, therefore the function signature 
+    		//receives a vector of files
+    		Vector<Vector<Integer>> input_ranking =	LoadInputRanking(input_ranking_file);
+    		
+    		for(Integer group_id : group_ids_sorted){//group_map.keySet()){
+
+
+    			Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
+    			int grp_size = users_in_grp.size();
+    			User grp_usr;    			
+
+    			//If it is the first ranking read for the groups    			    			
+    			if (pos_input_ranking == 0){
+    				grp_usr = new User(group_id,grp_size*inputs.size(),numItemsToUse); //construct a pseudo user that represents the group
+    				Usuarios.add(grp_usr);
+    			}else{
+    				grp_usr = Usuarios.get(group_id);
+    			}
     			
-    			Vector<Integer> usr_ranking = new Vector<Integer>(input_ranking.get(usr_position).
-    					subList(0, numItemsToUse));
+
+    			//gets the items already rated by the group's users in the training matrix
+    			//it avoids including an item already rated(and that will not appear in the test) 
+    			//in the group ranking
+    			HashSet<Integer> group_train_items = itemsUnion(users_in_grp, train_ratings);
     			
-    			
-    			grp_usr.addOriginalRanking(usr_ranking); //store the ranking correspondent to the user in the group    			
-    			Vector<Integer> original_ranking = new Vector<Integer>(usr_ranking);
-    			usr_ranking.removeAll(group_train_items); //remove the items already rated by any group user
-    			
-    			for (int item_pos = 0; item_pos < usr_ranking.size(); item_pos++){
-    				int item_id = usr_ranking.get(item_pos);     				
-    				grp_usr.addItem(item_id);
-    				int original_item_pos = original_ranking.indexOf(item_id);
-    				//TODO possivel fonte de problema. EStou pegando a posicao do item depois de remover os items que estavam na uniao dos usuarios
-    				//Dessa forma, aqui estou pegando a posicao do item depois dessa remocao, o que nao é a posicao real do item no ranking de entrada para este usuario
-    				//grp_usr.setItemPosition(item_id, usr_pos_in_grp, item_pos+1);
-    				grp_usr.setItemPosition(item_id, usr_pos_in_grp, original_item_pos+1);
-    				//grp_usr.setItemScore(item_id, usr_pos_in_grp, Metrics.calcRankNorm(it+1, sizeRankings));
-    			}    			    			
-    			
-    			usr_pos_in_grp++;
+    			int usr_pos_in_grp = pos_input_ranking*grp_size;
+    			for (Integer usr : users_in_grp){    			
+    				int usr_position = map_user_posicao.get(usr);//take the position the user should have in the input_ranking
+
+    				//Cuts the input ranking to use just numItemsToUse
+    				Vector<Integer> usr_ranking = new Vector<Integer>(input_ranking.get(usr_position).
+    						subList(0, numItemsToUse));
+
+
+    				grp_usr.addOriginalRanking(usr_ranking); //store the ranking correspondent to the user in the group    			
+    				Vector<Integer> original_ranking = new Vector<Integer>(usr_ranking); //clone the original ranking to use the positions the items are in this ranking
+    				usr_ranking.removeAll(group_train_items); //remove the items already rated by any group user
+
+    				for (int item_pos = 0; item_pos < usr_ranking.size(); item_pos++){
+    					int item_id = usr_ranking.get(item_pos);     				
+    					grp_usr.addItem(item_id);
+    					int original_item_pos = original_ranking.indexOf(item_id);
+    					grp_usr.setItemPosition(item_id, usr_pos_in_grp, original_item_pos+1);
+    					//grp_usr.setItemScore(item_id, usr_pos_in_grp, Metrics.calcRankNorm(it+1, sizeRankings));
+    				}    			    			
+
+    				usr_pos_in_grp++;
+    			}
+    			//Chama todas as funções de calculo de feature;;;
+    			grp_usr.ComputeFeatures();    		    		
     		}
-    		//Chama todas as funções de calculo de feature;;;
-    		grp_usr.ComputeFeatures();    		    		
+    		
+    		pos_input_ranking++;
+
     	}
     	
 		readGroupsTestFile(test_file, groupfile, "test");

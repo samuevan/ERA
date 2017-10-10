@@ -361,6 +361,25 @@ public class GPRA_Principal {
 				else
 					if (p_args.getBoolean("gr")){
 						//TODO isolar inicializacao do ERA para grupos
+						
+						//If grs parameter is null uses all the recommenders in the folder to
+						//construct the group recommendation, otherside uses only the recommenders in the 
+						//list
+						List<String> grs_base_rec = p_args.getList("grs");						
+						if (grs_base_rec != null){
+							
+							Vector<File> to_remove = new Vector<File>();
+							for (File aux_f : vf){
+								if (!Utils.containsAny(aux_f.getName(),grs_base_rec))
+									to_remove.add(aux_f);
+									//vf.remove(aux_f);
+							}
+							
+							vf.removeAll(to_remove);
+							
+							
+						}						
+						
 						dados = new InputData(vf,base,validacao,test,usermap,
 								new File(p_args.getString("groups_file")),
 								p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap]
@@ -445,7 +464,26 @@ public class GPRA_Principal {
 			}else{
 				
 				if (p_args.getBoolean("gr")){
-					System.out.println("asdf");					
+									
+					//If grs parameter is null uses all the recommenders in the folder to
+					//construct the group recommendation, otherside uses only the recommenders in the 
+					//list
+					List<String> grs_rec = p_args.getList("grs"); 
+					if (grs_rec != null){ 
+						Vector<File> to_remove = new Vector<File>();
+
+						for (File aux_f : vf_reeval){
+							if (!Utils.containsAny(aux_f.getName(),grs_rec))
+								to_remove.add(aux_f);
+								//vf_reeval.remove(aux_f);
+						}
+						
+						vf_reeval.removeAll(to_remove);
+					
+					}			
+					
+					
+					
 					dados_reeval = new InputData(vf_reeval,base_reeval,test_reeval,test_reeval,
 							usermap_reeval,new File(p_args.getString("groups_file")),
 							p_args.getInt("i2use"),p_args.getInt("i2sug"));
@@ -710,8 +748,14 @@ public class GPRA_Principal {
 					
 					if (p_args.getBoolean("gr"))
 					{
+						//Include the base recommenders' names in the output name
+						List<String> grs_base_rec = p_args.getList("grs");
+						String cx = "";				
+						if (grs_base_rec != null)
+							cx = "_"+grs_base_rec.toString().replace(", ", "_").replace("[", "").replace("]", "");
+
 						print_ranking = new PrintWriter(new BufferedWriter(
-							new FileWriter(p_args.getString("out_dir")+partition+"run"+run+"_GPRA.gout")));
+							new FileWriter(p_args.getString("out_dir")+partition+"run"+run+"_GPRA"+cx+".gout")));
 					}
 					else{
 						print_ranking = new PrintWriter(new BufferedWriter(

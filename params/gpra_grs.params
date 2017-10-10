@@ -98,38 +98,44 @@ gp.fs.0 = ec.gp.GPFunctionSet
 gp.fs.0.name = f0
 
 # We have five functions in the function set.  They are:
-gp.fs.0.size = 2
+gp.fs.0.size = 14
 
 #funcoes
 
-#gp.fs.0.func.0 = ec.app.gpra.terminals.AlphaERC
-#gp.fs.0.func.0.nc = nc0
-#gp.fs.0.func.1 = ec.app.gpra.functions.Log
-#gp.fs.0.func.1.nc = nc1
-gp.fs.0.func.0 = ec.app.gpra.functions.Add
-gp.fs.0.func.0.nc = nc2
-#gp.fs.0.func.3 = ec.app.gpra.functions.Mul
-#gp.fs.0.func.3.nc = nc2
-#gp.fs.0.func.4 = ec.app.gpra.functions.Sub
-#gp.fs.0.func.4.nc = nc2
-#gp.fs.0.func.5 = ec.app.gpra.functions.Div
-#gp.fs.0.func.5.nc = nc2
+gp.fs.0.func.0 = ec.app.gpra.terminals.AlphaERC
+gp.fs.0.func.0.nc = nc0
+gp.fs.0.func.1 = ec.app.gpra.functions.Log
+gp.fs.0.func.1.nc = nc1
+gp.fs.0.func.2 = ec.app.gpra.functions.Add
+gp.fs.0.func.2.nc = nc2
+gp.fs.0.func.3 = ec.app.gpra.functions.Mul
+gp.fs.0.func.3.nc = nc2
+gp.fs.0.func.4 = ec.app.gpra.functions.Sub
+gp.fs.0.func.4.nc = nc2
+gp.fs.0.func.5 = ec.app.gpra.functions.Div
+gp.fs.0.func.5.nc = nc2
 
 
 #Terminals
 
-#gp.fs.0.func.6 = ec.app.gpra.terminals.TimesOnRankings
-#gp.fs.0.func.6.nc = nc0
-#gp.fs.0.func.7 = ec.app.gpra.terminals.ProbTop10
-#gp.fs.0.func.7.nc = nc0
-#gp.fs.0.func.8 = ec.app.gpra.terminals.MeanAgreements
-#gp.fs.0.func.8.nc = nc0
-#gp.fs.0.func.9 = ec.app.gpra.terminals.OutrankScore
-#gp.fs.0.func.9.nc = nc0
+gp.fs.0.func.6 = ec.app.gpra.terminals.TimesOnRankings
+gp.fs.0.func.6.nc = nc0
+gp.fs.0.func.7 = ec.app.gpra.terminals.ProbTop10
+gp.fs.0.func.7.nc = nc0
+gp.fs.0.func.8 = ec.app.gpra.terminals.MeanAgreements
+gp.fs.0.func.8.nc = nc0
+gp.fs.0.func.9 = ec.app.gpra.terminals.OutrankScore
+gp.fs.0.func.9.nc = nc0
 
 
-gp.fs.0.func.1 = ec.app.gpra.terminals.BordaComplete
-gp.fs.0.func.1.nc = nc0
+gp.fs.0.func.10 = ec.app.gpra.terminals.BordaComplete
+gp.fs.0.func.10.nc = nc0
+gp.fs.0.func.11 = ec.app.gpra.terminals.SUM
+gp.fs.0.func.11.nc = nc0
+gp.fs.0.func.12 = ec.app.gpra.terminals.MNZ
+gp.fs.0.func.12.nc = nc0
+gp.fs.0.func.13 = ec.app.gpra.terminals.RRF
+gp.fs.0.func.13.nc = nc0
 
 #gp.fs.0.func.1 = ec.app.gpra.terminals.Score0
 #gp.fs.0.func.1.nc = nc0

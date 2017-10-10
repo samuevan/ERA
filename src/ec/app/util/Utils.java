@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
@@ -411,6 +412,17 @@ public class Utils {
 		}
 	}
 
+	
+	
+	public static boolean containsAny(String str_to_compare, List<String> items){
+		
+		for (String item_str : items){
+			if (str_to_compare.contains(item_str)){
+				return true;
+			}
+		}
+		return false;
+	}
 		
 
 }

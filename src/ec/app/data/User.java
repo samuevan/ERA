@@ -98,8 +98,7 @@ public class User {
 	//adciona um item com scores e posicoes vazias
 	public void addItem(int it){
 		if(!this.hasItem(it)){
-			Items.put(it, new Item(it, numRankings));
-			
+			Items.put(it, new Item(it, numRankings));			
 		}
 			
 		

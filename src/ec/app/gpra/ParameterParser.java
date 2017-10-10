@@ -1,4 +1,6 @@
 package ec.app.gpra;
+import java.util.List;
+
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -138,8 +140,6 @@ public class ParameterParser {
 				.setDefault(false)
 				.action(storeTrue())
 				.help("Dissable the construction of the feature Outrank.");
-       
-
         
         parser.addArgument("--use_sparse")
 				.type(Boolean.class)
@@ -177,8 +177,13 @@ public class ParameterParser {
 				.setDefault(false)
 				.action(storeTrue())
 				.help("Run the ERA to the Group Recomendation problem. When enabled one needs to set"
-						+ "the file containing the groups");
-
+						+ "the file containing the groups");                
+        
+        //TODO verify if it is possible to merge this parameter with --gr  
+        parser.addArgument("--grs")
+        		.nargs("*")
+        		.help("List of Recommenders to be used in the group aggregation");
+        
         parser.addArgument("--groups_file")
 		.setDefault("")
         .type(String.class)
