@@ -19,6 +19,8 @@ import java.util.Vector;
 
 
 
+
+import ec.app.data.User;
 //import lda_gpra.LDARA;
 //import lda_gpra.LDAUser;
 import ec.app.gpra.GPRA_Principal;

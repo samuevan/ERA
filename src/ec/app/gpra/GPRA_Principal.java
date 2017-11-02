@@ -19,6 +19,7 @@ import ec.EvolutionState;
 import ec.Evolve;
 import ec.Individual;
 import ec.app.data.InputData;
+import ec.app.data.PlainDataset;
 import ec.app.data.User;
 import ec.app.util.UtilStatistics;
 import ec.app.util.Utils;
@@ -384,6 +385,10 @@ public class GPRA_Principal {
 								new File(p_args.getString("groups_file")),
 								p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap]
 						//dados.ExtractGroupFeatures(vf, new File(p_args.getString("groups_file")), test,p_args.getInt("i2use") , p_args.getInt("i2sug"));
+						
+						
+						
+						
 					}
 					else{
 						dados = new InputData(vf,validacao,test,usermap,p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap
@@ -392,8 +397,12 @@ public class GPRA_Principal {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-
+			if (p_args.getBoolean("save_plain")){
+				PlainDataset.writes_classification_dataset(dados, p_args.getString("out_dir"), false, part);
+			}
+				
+			
+			
 			Vector<User> usuarios = dados.getUsers();
 			//System.out.println("1");
 			//TODO necessario? acredito que posso remover
@@ -487,6 +496,9 @@ public class GPRA_Principal {
 					dados_reeval = new InputData(vf_reeval,base_reeval,test_reeval,test_reeval,
 							usermap_reeval,new File(p_args.getString("groups_file")),
 							p_args.getInt("i2use"),p_args.getInt("i2sug"));
+					
+					
+					
 				}else
 				{
 					dados_reeval = new InputData(vf_reeval,test_reeval,test_reeval,
@@ -495,6 +507,12 @@ public class GPRA_Principal {
 			}
 			Vector<User> usuarios_reeval = dados_reeval.getUsers();
 
+			
+			if (p_args.getBoolean("save_plain")){
+				//PlainDataset.writes_classification_dataset(dados_reeval, p_args.getString("out_dir"), true, part);
+				PlainDataset.writes_plainGP_dataset(dados_reeval,p_args.getString("out_dir"),true,part);
+			}
+			
 			//TODO necessario? posso remover?
 			/*
 			for(User u : usuarios_reeval){
@@ -538,7 +556,7 @@ public class GPRA_Principal {
 
 			//######################################## Start GP ################################################
 			ParameterDatabase parameters = null;
-			if (! p_args.getBoolean("noGP"))
+			if (! p_args.getBoolean("no_GP"))
 			{
 				
 				File param_file;

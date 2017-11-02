@@ -378,6 +378,10 @@ public class User {
 	public void computeItemsBordaScore(){
 		
 		//For each item recommended to the user
+		
+		double bsc_max = 0;
+		double bsc_min = 0;
+		
 		for(Integer item_id : Items.keySet()){			
 			
 			Item item = Items.get(item_id);
@@ -389,9 +393,28 @@ public class User {
 					bsc += NumItemsToUse - (item_pos -1);
 				}
 			}
+			if (bsc > bsc_max)
+				bsc_max = bsc;
+			else
+				if (bsc < bsc_min)
+					bsc_min = bsc;
+			
+			
 			item.setBordaScoreComplete(bsc);
 			
 		}
+		
+		//NORMALIZING
+		for(Integer item_id : Items.keySet()){
+			
+			Item item = Items.get(item_id);
+			double curr_borda = item.getBordaScoreComplete();
+			curr_borda = (curr_borda - bsc_min)/(bsc_max - bsc_min);		
+					
+			item.setBordaScoreComplete(curr_borda);
+			
+		}
+		
 		
 	}
 	
@@ -520,7 +543,7 @@ public class User {
 			
 			Item item = Items.get(item_id);
 			//Computes the value of the feature for each input ranking
-			int times_on_rank = 0;
+			double times_on_rank = 0;
 			for (int rank = 0; rank < numRankings; rank++ ){
 				
 				int item_pos = item.getPosition(rank);
@@ -528,7 +551,7 @@ public class User {
 				if((item_pos != -1))
 					times_on_rank++;										
 			} 
-						
+			times_on_rank /= this.numRankings; 			
 			item.setTimesR(times_on_rank);
 			
 			
@@ -548,10 +571,33 @@ public class User {
 	
 	public void computeAgreements(int window){
 		
+		double curr_agg, max_agg = 0, min_agg = 0;
+		
 		for(Integer item_id : Items.keySet()){			
 			Item item = Items.get(item_id);
-			item.calcAgreements(window);
+			curr_agg = item.calcAgreements(window);
+			
+			if (curr_agg > max_agg)
+				max_agg = curr_agg;
+			else
+				if (curr_agg < min_agg)
+					min_agg = curr_agg;			
 		}	
+		
+		
+		//NORMALIZING
+		for(Integer item_id : Items.keySet()){
+			
+			Item item = Items.get(item_id);
+			double norm_agg = item.getMeanAgreements();
+			norm_agg = (norm_agg - min_agg)/(max_agg - min_agg);		
+					
+			item.setMeanAgreement(norm_agg);;
+			
+		}
+		
+		
+		
 	}
 	
 	

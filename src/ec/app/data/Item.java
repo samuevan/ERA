@@ -17,7 +17,7 @@ public class Item{
 	private Vector<Double> actual_bordaScores; 
 	private Vector<Double> lda_scores;
 	private double probTop10 = -1;
-	private int timesR = 0;
+	private double timesR = 0;
 	private double outrank_score;
 	private Vector<Integer> categories;
 	private double categories_score = 0;
@@ -199,12 +199,12 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	}
 	
 
-	public int getTimesR() {
+	public double getTimesR() {
 		return timesR;
 	}
 
 
-	public void setTimesR(int timesR) {
+	public void setTimesR(double timesR) {
 		this.timesR = timesR;
 	}
 
@@ -268,7 +268,7 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 		return categories_score;
 	}
 
-	public void calcAgreements(int window){
+	public double calcAgreements(int window){
 		agreements = new Vector<Integer>();
 		for (int p : positions){
 			int cur_a = 0;
@@ -286,11 +286,18 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 			meanAgreements += a;
 		}
 		meanAgreements /= numRankings;
+		
+		return meanAgreements;
 	}
 
 	public Vector<Integer> getAgreements(){
 		return agreements;
 	}
+	
+	public void setMeanAgreement(double mean_agg){
+		this.meanAgreements = mean_agg;
+	}
+	
 	public double getMeanAgreements(){
 		return meanAgreements;
 	}

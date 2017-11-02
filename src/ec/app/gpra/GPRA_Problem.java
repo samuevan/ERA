@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream.PutField;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -28,7 +29,8 @@ import ec.gp.*;
 import ec.gp.koza.*;
 import ec.simple.*;
 import librec.data.SparseVector;
-
+//import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 
 
@@ -37,15 +39,16 @@ public class GPRA_Problem extends GPProblem implements
 	private static final long serialVersionUID = 1;
 
 	private InputData dados;
+	int random_users[];
 	private boolean save_ranking=false;
 	public double meanAgreements;
 	private int numUsedRanks = 0;
 	public double[] scores; //= new double[20];//{-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000};
-	
+	private double reduce_users = 0.33;
 	public double[] genericDoubles; //= new double[20];
 	//public SparseVector genericDoubles;
 	public double probTop10 = 0;
-	public int timesOnRankings = 0;
+	public double timesOnRankings = 0;
 	public double outrank_score = 0;
 	public double bordaComplete = 0;
 	public double combSUM = 0;
@@ -69,6 +72,13 @@ public class GPRA_Problem extends GPProblem implements
 		if (!(input instanceof DoubleData))
 			state.output.fatal("GPData class must subclass from "
 					+ DoubleData.class, base.push(P_DATA), null);
+		
+		
+		
+		if (random_users == null){
+			int size_random = (int) (reduce_users*dados.getNumUsers());
+			 random_users = new int[size_random];
+		}
 	
 	
 	}
@@ -196,12 +206,33 @@ public class GPRA_Problem extends GPProblem implements
 			float mean_hits_sug = 0;
 			float mean_hits_use = 0;
 			double prec_5_t = 0, prec_5_v = 0, prec_10_t = 0, prec_10_v = 0;
-			double map_5_t = 0, map_5_v = 0, map_10_t = 0, map_10_v = 0;
+			double map_5_t = 0, map_5_v = 0, map_10_t = 0, map_10_v = 0;			
 			
+			
+			
+			//Verifica se vai randomizar os usuarios
+			
+			if (!(save_ranking) & 
+					(state.generation % 10 == 0) &
+					reduce_users < 1.0){
+				
+					Random rdn = new Random(((MySimpleEvolutionState) state).getSeed());
+					for (int rp = 0; rp < random_users.length; rp++){
+						random_users[rp] = rdn.nextInt(users.size());//ThreadLocalRandom.current().nextInt(0, users.size());
+					}
+			}
+			
+			if ((save_ranking) | (reduce_users == 1.0)){
+				random_users = new int[users.size()];
+				for (int rp = 0; rp < random_users.length; rp++){
+					random_users[rp] = rp;
+				}
+			}
+					
 			
 			//itera pelos usuarios presentes nos rankings
-			for(int user_pos = 0; user_pos<users.size(); user_pos++){
-				
+			//for(int user_pos = 0; user_pos<users.size(); user_pos++){
+			for(int user_pos : random_users){	
 				Vector<Integer> saida_items = new Vector<Integer>();
 				Vector<Double> saida_scores = new Vector<Double>();
 				

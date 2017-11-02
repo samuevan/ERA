@@ -125,7 +125,7 @@ public class ParameterParser {
 				.help("The number of threads to be used during reproduction and evaluation "
 						+ "(ECJ multithread)");
         
-        parser.addArgument("--noGP")
+        parser.addArgument("--no_GP")
 				.type(Boolean.class)
 				.setDefault(false)
 				.action(storeTrue())
@@ -171,6 +171,15 @@ public class ParameterParser {
 				.action(storeTrue())
 				.help("Enables the use of a plain dataset containing all the features already computed");
 
+        
+        
+        parser.addArgument("--save_plain")
+		.type(Boolean.class)
+		.setDefault(false)
+		.action(storeTrue())
+		.help("Save the plain version of InputData in out_dir folder");
+
+        
         
         parser.addArgument("--gr")
 				.type(Boolean.class)
