@@ -81,12 +81,12 @@ public class GPRA_Principal {
 		return p_args.getInt("nich");
 	}
 	
-	//funcao usada para armazenar os melhores indivíduos de cada run
+	//funcao usada para armazenar os melhores indivduos de cada run
 	public static void backup_individual(Vector<Individual>bkp_vet,Individual ind, int pos){
 		if (bkp_vet.get(pos) != null){
 				if (((KozaFitness)ind.fitness).standardizedFitness() < 
 						((KozaFitness)bkp_vet.get(pos).fitness).standardizedFitness()){
-					//eh preciso clonar o individuo para que ele não tenha a sua fitness alterada
+					//eh preciso clonar o individuo para que ele no tenha a sua fitness alterada
 					//uma vez que essa fitness eh calculada na validacao e o individuo sera reavaliado
 					bkp_vet.set(pos, (Individual) ind.clone());
 				}
@@ -117,9 +117,9 @@ public class GPRA_Principal {
 	
 	
 	/**
-	 * Reavalia os melhores individuos para cada rodada, para cada partição e o melhor individuo de todas as gerações/rodadas
+	 * Reavalia os melhores individuos para cada rodada, para cada partio e o melhor individuo de todas as geraes/rodadas
 	 * 
-	 * @param data_folder pasta onde estão os rankings de entrada
+	 * @param data_folder pasta onde esto os rankings de entrada
 	 * @param parameters Parametros usados no EvalutionState
 	 * @param output_dir
 	 * @throws IOException
@@ -127,7 +127,7 @@ public class GPRA_Principal {
 	public static void reeval_best_individuals(String data_folder,ParameterDatabase parameters, String output_dir) throws IOException{
 		
 		
-		//resultados das partições armazenadas por linha
+		//resultados das parties armazenadas por linha
 		Vector<Double> map_best_all = new Vector<Double>(); 
 		Vector<Vector<Double>> map_best_individuals_run = new Vector<Vector<Double>>();
 		Vector<Vector<Double>> map_best_individuals_par = new Vector<Vector<Double>>();
@@ -235,8 +235,8 @@ public class GPRA_Principal {
 		Evolve.cleanup(evolution_state);
 		out_reeval.write("Map Best Individuals by partition\n");
 		
-		//Na impressao dos resultados a linha e a coluna das matrizes de resultado estão invertidas
-		//fiz isso para que os resultados por indivíduo aparecam por linha na saída
+		//Na impressao dos resultados a linha e a coluna das matrizes de resultado esto invertidas
+		//fiz isso para que os resultados por indivduo aparecam por linha na sada
 		// 		u1;u2;u3;u4;u5
 		//i1	xx;xx;xx;xx;xx
 		//i2	xx;x;;xx;xx;xx
@@ -318,7 +318,7 @@ public class GPRA_Principal {
 			} 
 		}
 
-		//iteração para as partições
+		//iterao para as parties
 		long total_time2 = System.currentTimeMillis();
 		
 		for(int part = p_args.getInt("pini"); part <= p_args.getInt("pend"); part++){
@@ -634,7 +634,7 @@ public class GPRA_Principal {
 				
 				
 				//Quer dizer que existem mais classe Score do que rankings.
-				//Pra isso é preciso que as classes scores estejam nas primeiras posicoes
+				//Pra isso  preciso que as classes scores estejam nas primeiras posicoes
 				//TODO
 				//if (parameters.containsKey("gp.fs.0.func."+numUsedRanks)){
 					 
@@ -791,7 +791,7 @@ public class GPRA_Principal {
 
 
 			}
-			//Só realiza a reavaliacao completa quando o GP rodou para todas as particoes
+			//S realiza a reavaliacao completa quando o GP rodou para todas as particoes
 			/*if (pini == 1 & pend == 5 & nruns==5)
 				reeval_best_individuals(base_dir+"reeval/",parameters, out_dir);*/
 

@@ -268,7 +268,7 @@ public class MySimpleEvolutionState extends ec.simple.SimpleEvolutionState {
 				 * System.out.println(ind2); System.out.println(dist_p); }
 				 */
 			}
-			// Como o problema é de minimização (minimizo 1-map) eu tenho que
+			// Como o problema  de minimizao (minimizo 1-map) eu tenho que
 			// converter o valor
 			// da fitness para 1-fit de forma que eu possa dividir pelo sh_sum
 			// (o somatorio dos itens proximos)
@@ -294,13 +294,13 @@ public class MySimpleEvolutionState extends ec.simple.SimpleEvolutionState {
 
 	/**
 	 * @param niches
-	 *            matriz contendo os grupos de indivíduos que possuem o mesmo
+	 *            matriz contendo os grupos de indivduos que possuem o mesmo
 	 *            valor de fitness
 	 * 
 	 * 
 	 *            Recebe uma matriz que agrupa os individuos com os mesmos
 	 *            valores de fitness e aumenta a fitness de cada um desses
-	 *            individuos proporcionalmente à quantidade de individuos no
+	 *            individuos proporcionalmente  quantidade de individuos no
 	 *            mesmo grupo
 	 */
 	private void fitness_sharing(Vector<Vector<MyIndividual>> niches) {
@@ -313,7 +313,7 @@ public class MySimpleEvolutionState extends ec.simple.SimpleEvolutionState {
 				double new_fit = fit * (1 + niche.size() / 100.0); // TODO
 																	// Verificar
 																	// melhor
-																	// estratégia
+																	// estratgia
 																	// aqui
 				new_fit = Math.min(new_fit, 1);
 				((KozaFitness) ind.fitness).setStandardizedFitness(this,

@@ -1,12 +1,32 @@
 package ec.app.data;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Vector;
 
+import net.librec.math.algorithm.SVD;
+import net.librec.math.structure.DataMatrix;
+import net.librec.math.structure.DenseMatrix;
 import ec.app.util.Metrics;
 import ec.app.util.Pair;
 import ec.app.util.Utils;
+
+
+
+
+
+
+import java.util.Arrays;
+import java.util.List;
+// 
+
+
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 
 public class User {
@@ -18,22 +38,22 @@ public class User {
 	//private Vector<Pair<Integer,Double>> lda_probabilities;
 	public Vector<Vector<Integer>> alternative_rankings;
 	public Vector<Integer> validationRanking;
-	public Vector<Integer> testRanking; //Vector contendo os items que o usuário avaliou de alguma maneira
+	public Vector<Integer> testRanking; //Vector contendo os items que o usuario avaliou de alguma maneira
 	//public Vector<Pair<Integer,Integer>> testRanking2;	//TODO alterar para tambem guardar os ratings dados pelo usuario
 	private Vector<Integer> gpra_ranking;
 	private Vector<Double> gpra_ranking_scores;
 	
 	//private Vector<Integer[]>  originalRankings;
-	private Vector<Vector<Integer>>  originalRankings2;
-
+	private Vector<Vector<Integer>>  originalRankings;
+	private Vector<Vector<Pair<Integer,Double>>>  originalRankingsWithScores;
 	private boolean originalRankingsInitialized = false;
 
 	
 	/**
 	 * 
 	 * @param u ID do usuario
-	 * @param numR Número de rankings dados como entrada
-	 * @param numRankIt Número de elementos presentes em cada um dos rankings
+	 * @param numR Nmero de rankings dados como entrada
+	 * @param numRankIt Nmero de elementos presentes em cada um dos rankings
 	 */
 	public User(int u, int numR, int i2use)
 	{
@@ -58,9 +78,10 @@ public class User {
 		}
 		
 		
-		originalRankings2 = new Vector<Vector<Integer>>();
+		originalRankings = new Vector<Vector<Integer>>();
+		originalRankingsWithScores = new Vector<Vector<Pair<Integer,Double>>>();
 		alternative_rankings  = new Vector<Vector<Integer>>();
-		//Aloca espaço para os rankings originais
+		//Aloca espao para os rankings originais
 		if(i2use > 0){
 			initializeOriginalRankings();
 			originalRankingsInitialized = true;
@@ -69,23 +90,24 @@ public class User {
 	
 	public Vector<Vector<Integer>> getOriginalRankings(){
 		
-		return originalRankings2;
+		return originalRankings;
 	}
 	
 	
 	public void freeOriginalRankings(){
-		int num_original_rank = originalRankings2.size();
+		int num_original_rank = originalRankings.size();
 		for (int i = 0; i < num_original_rank; i++){
-			this.originalRankings2.set(i,null);
+			this.originalRankings.set(i,null);
 		}
-		this.originalRankings2 = null;
+		this.originalRankings = null;
 	}
 	
 	private void initializeOriginalRankings(){
 		
 		for(int i = 0; i < numRankings; i++){
 			//originalRankings.add(new Integer[numRankItems]);
-			originalRankings2.add(new Vector<Integer>());
+			originalRankings.add(new Vector<Integer>());
+			originalRankingsWithScores.add(new Vector<Pair<Integer,Double>>());
 		}
 	}
 	
@@ -113,10 +135,10 @@ public class User {
 	}
 	
 	
-	public void setItemGenericValuesSparse(int item, int size, double[] values)
+	/*public void setItemGenericValuesSparse(int item, int size, double[] values)
 	{
 		Items.get(item).setGenericValuesSparse(size, values);
-	}
+	}*/
 	
 	public void setItemGenericValue(int item, int pos, double val){
 		Items.get(item).setGenericValue(val, pos);
@@ -135,7 +157,7 @@ public class User {
 		
 		//if(posScore == Items.get(item).getNumRankings()){
 			//ocorre no momento em que estou utilizando a funcao 
-			//para adcionar um novo ranking ao usuário
+			//para adcionar um novo ranking ao usurio
 			//Items.get(item).addNewRanking();
 		//}
 		
@@ -143,22 +165,34 @@ public class User {
 		
 	}
 	
+	public void setItemGivenScore(int item_id, int pos,
+			double item_score) {
+		// TODO Auto-generated method stub
+		
+		Items.get(item_id).setGiven_score(pos, item_score);
+	}
+	
+	
 	//Adciona um item a um ranking em uma posicao especifica
 	public void addItemOriginalRanking(int it, int rank){
-		originalRankings2.get(rank).add(it);
+		originalRankings.get(rank).add(it);
 	}
 		
 	//retorna um item de um ranking em uma posicao especifica
 	public int getItemOriginalRanking(int rank, int position){
-		return originalRankings2.get(rank).get(position);
+		return originalRankings.get(rank).get(position);
 	}
 	
 	public Vector<Integer> getOriginalRanking(int rank){
-		return originalRankings2.get(rank);
+		return originalRankings.get(rank);
 	}
 	
 	public void addOriginalRanking(Vector<Integer> rank){
-		originalRankings2.add(rank);
+		originalRankings.add(rank);
+	}
+	
+	public void addOriginalRankingWithScores(Vector<Pair<Integer,Double>> rank){
+		originalRankingsWithScores.add(rank);
 	}
 	
 	
@@ -239,12 +273,12 @@ public class User {
 	 */
 	public void addNewRanking(Vector<Integer> newRanking){
 		
-		this.originalRankings2.add(new Vector<Integer>());
+		this.originalRankings.add(new Vector<Integer>());
 		numRankings++;
 		
 		Iterator<Integer> it = Items.keySet().iterator();
 		
-		//adciona uma posição a mais nos vetores de cada um dos itens
+		//adciona uma posio a mais nos vetores de cada um dos itens
 		while(it.hasNext()){
 			int item = it.next();
 			Items.get(item).addNewRanking();
@@ -284,7 +318,7 @@ public class User {
 				
 				int pos_r = item.getPosition(pos);
 				
-				//verifica se o item está presente no ranking corrente
+				//verifica se o item est presente no ranking corrente
 				if(pos_r != -1){
 					
 					int numi = this.getNumItems();
@@ -304,7 +338,7 @@ public class User {
 				
 				
 				//##################################################
-				//Calcula o numero de vezes que o item está no top10
+				//Calcula o numero de vezes que o item est no top10
 				
 				if((pos_r != -1) && (pos_r <= 10))
 					timesTop10++;
@@ -601,7 +635,282 @@ public class User {
 	}
 	
 	
+	/**
+	 * This functions returns an average of the difference between the log (natural log) rank positions of items   
+	 * item1 and item2 among all the rankings
+	 *  
+	 * The functions itemsPairwise* are inspired by the formulation presented in the papers:
+	 * [1] Learning to rank by aggregating expert preferences
+	 * [2] Rank Aggregation via Nuclear Norm Minimization  
+	 * @param item1
+	 * @param item2
+	 * @return
+	 */
+	private double itemsPairwiseLogRankDifference(Item item1, Item item2){
+		
+		double val = 0.0;
+		double den = 0;
+		for (int i = 0; i < numRankings; i++){
+			//just compute if both items are present in rank
+			if (!((item1.getPosition(i) == -1) | (item2.getPosition(i) == -1))){
+				den += 1.0;
+				if (item1.getPosition(i) < item2.getPosition(i)){				
+					double val_aux = Math.log(item2.getPosition(i))-Math.log(item1.getPosition(i));
+					val += val_aux/Math.log(NumItemsToUse);				
+				}
+			}					
+		}
+		if (den == 0)				
+			return val;
+		else
+			return val/den;
+		
+	}
+	
+	/**
+	 * This functions returns an average of the difference between the rank positions of items   
+	 * item1 and item2 among all the rankings
+	 *  
+	 * The functions itemsPairwise* are inspired by the formulation presented in the papers:
+	 * [1] Learning to rank by aggregating expert preferences
+	 * [2] Rank Aggregation via Nuclear Norm Minimization  
+	 * @param item1
+	 * @param item2
+	 * @return
+	 */
+	private double itemsPairwiseRankDifference(Item item1, Item item2){
+		
+		double val = 0.0;
+		double den = 0;
+		for (int i = 0; i < numRankings; i++){
+			//just compute if both items are present in rank
+			if (!((item1.getPosition(i) == -1) | (item2.getPosition(i) == -1))){
+				den += 1.0;
+				if (item1.getPosition(i) < item2.getPosition(i)){				
+					double val_aux = item2.getPosition(i)-item1.getPosition(i);
+					val += val_aux/NumItemsToUse;				
+				}
+			}					
+		}
+		if (den == 0)				
+			return val;
+		else
+			return val/den;
+		
+	}
+	
+	
+	
+	
+	/**
+	 * This functions returns the number of times item1 is positioned in a better position  
+	 * than the item2 
+	 *  
+	 * The function itemsPairwise* are inspired by the formulation presented in the papers:
+	 * [1] Learning to rank by aggregating expert preferences
+	 * [2] Rank Aggregation via Nuclear Norm Minimization  
+	 * @param item1
+	 * @param item2
+	 * @return
+	 */
+	private double itemsPairwiseOccurenceDifference(Item item1, Item item2){
+		
+		double val = 0.0;
+		
+		for (int i = 0; i < numRankings; i++){
+						
+			if (item1.getPosition(i) <= item2.getPosition(i))
+				val++;
+		}		
+		return val;	
+	}
+	
+	
+	
+	/**
+	 * This functions returns 1 if the item1 is positioned in a better position  
+	 * than the item2 in the majority of the rankings used as input (more than numRankings/2)
+	 *  
+	 * The function itemsPairwise* are inspired by the formulation presented in the papers:
+	 * [1] Learning to rank by aggregating expert preferences
+	 * [2] Rank Aggregation via Nuclear Norm Minimization  
+	 * @param item1
+	 * @param item2
+	 * @return
+	 */
+	private double itemsPairwiseBinaryDifference(Item item1, Item item2){
+		
+		double val = 0.0;
+		double numRanksIntersection = 0;
+		for (int i = 0; i < numRankings; i++){
+			if ((item1.getPosition(i) != -1) & (item2.getPosition(i)!= -1)){
+				numRanksIntersection++;
+				if (item1.getPosition(i) <= item2.getPosition(i))
+					val++;
+				
+			}
+		}
+		
+		if (val >= (numRanksIntersection/2.0) & numRanksIntersection > 0)
+			return 1;
+		else
+			return 0;	
+		
+	}
+	
+	
+	/*
+	private double mean(double[] vet){
+		
+		double m = 0.0;
+		for(int i = 0; i < vet.length; i++){
+			m += vet[i];
+		}
+		
+		return m/vet.length;
+		
+	}
+	
+	
+	private double variance(double[] vet){
+		
+		double meanx = mean(vet);
+		double var = 0.0;
+		for(int i = 0; i < vet.length; i++){
+			var += Math.pow((vet[i]-meanx),2)/(vet.length-1);
+					
+		}
+		
+		return var;
+		
+	}
+	
+	private double[] centerData(double vet[]){
+		double centered_vet[] = new double[vet.length];
+		double meanx = mean(vet);
+		double varx = variance(vet);
+		
+		for (int i = 0; i < centered_vet.length; i++){
+			if (varx!=0)
+				centered_vet[i] = (vet[i]-meanx)/Math.sqrt(varx);
+			else
+				centered_vet[i] = (vet[i]-meanx);
+			
+		}
+		
+		return centered_vet;
+		
+	}*/
+
+	
+	
+	/**
+	 * INCOMPLETE
+	 * @param array
+	 */
+	public void computeSVD(double[][] array){
+				
+		Array2DRowRealMatrix data = new Array2DRowRealMatrix(array);
+							
+		SingularValueDecomposition svd = new SingularValueDecomposition(data);
+		
+		Array2DRowRealMatrix U = (Array2DRowRealMatrix) svd.getU();
+		Array2DRowRealMatrix VT = (Array2DRowRealMatrix) svd.getVT();		
+		
+	}
+	
+	
+	
+	
+	public void computeItemsPairwiseMatrix(){
+		
+		int NUM_SVD_COEF = 2;
+		
+		double[][] itemsByItems = new double[Items.size()][Items.size()];
+		
+		DenseMatrix itemsByItemsBin = new DenseMatrix(Items.size(), Items.size());		
+		DenseMatrix itemsByItemsOccur = new DenseMatrix(Items.size(), Items.size());
+		DenseMatrix itemsByItemsRank = new DenseMatrix(Items.size(), Items.size());
+		DenseMatrix itemsByItemsLogRank = new DenseMatrix(Items.size(), Items.size());
+		ArrayList<Integer> items_ids = new ArrayList<Integer>(Items.keySet());
+		
+		
+		
+		
+		Collections.sort(items_ids);
+		//Construct matrix
+		for (int i = 0; i < items_ids.size();i++){			
+			for(int j = 0; j < items_ids.size();j++){
+				if (i!=j){
+					double items_diff = itemsPairwiseBinaryDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
+					itemsByItemsBin.set(i, j, items_diff);
+					itemsByItems[i][j] = items_diff;
+					
+					double items_diffOccu = itemsPairwiseOccurenceDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
+					itemsByItemsOccur.set(i, j, items_diffOccu);
+					
+					double items_diffRank = itemsPairwiseRankDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
+					itemsByItemsRank.set(i, j, items_diffRank);
+					
+					
+					double items_diffLog = itemsPairwiseLogRankDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
+					itemsByItemsLogRank.set(i, j, items_diffLog);
+					
+					
+				}
+				
+			}
+		}
+		
+		int num_items = items_ids.size();
+
+		computeSVD(itemsByItems);
+		SVD svd = new SVD(itemsByItemsBin);				
+		
+		DenseMatrix U_reduced = svd.getU().getSubMatrix(0, num_items-1, 0, NUM_SVD_COEF-1);
+		DenseMatrix V_reduced = svd.getV().getSubMatrix(0, num_items-1, 0, NUM_SVD_COEF-1);
+		double S_reduced[] = Arrays.copyOfRange(svd.getSingularValues(),0,NUM_SVD_COEF-1);
+		
+		//TODO atribuir os valores ao item
+		
+		
+		
+		for (int i = 0; i < num_items; i++){
+			
+			Vector<Double> svd_coefs = new Vector<Double>();
+			
+			svd_coefs.add(itemsByItemsBin.sumOfRow(i)/(float)num_items);
+			svd_coefs.add(itemsByItemsOccur.sumOfRow(i)/(float)num_items);
+			svd_coefs.add(itemsByItemsRank.sumOfRow(i)/(float)num_items);
+			svd_coefs.add(itemsByItemsLogRank.sumOfRow(i)/(float)num_items);
+			
+			Items.get(items_ids.get(i)).setSVDCoeficients(svd_coefs);
+			
+		}
+		
+		
+		
+		
+	}
+	
+	
+	
+	private void computeGivenScoresStats() {
+		// TODO Auto-generated method stub
+		
+		for(Integer item_id : Items.keySet()){
+			Items.get(item_id).setGS_avg();
+			Items.get(item_id).setGS_median();
+			Items.get(item_id).setGS_max();
+			Items.get(item_id).setGS_min();
+			Items.get(item_id).setGS_std();			
+		}
+		
+	}
+	
+	
 	public void ComputeFeatures(){
+		//computeItemsPairwiseMatrix();
 		computeItemsRankScore();
 		computeProbOnTopK(0.3); //TODO receive as parameter
 		computeTimesOnRanks();
@@ -610,9 +919,12 @@ public class User {
 		computeCombMNZ();
 		computeCombSUM();
 		computeItemsRRF(60);
+		computeGivenScoresStats();
 	}
 		
 	
+	
+
 	public Vector<Integer> getGpra_ranking() {
 		return gpra_ranking;
 	}
@@ -645,4 +957,6 @@ public class User {
 		
 		return s;
 	}
+
+
 }

@@ -86,11 +86,11 @@ public class PlainDataset {
 
 
 	/**
-	 * Pega os rankings de entrada e gera uma base onde cada par <user,item> é uma instancia.
-	 * Cada instância contém todos os terminais que sao utilizados pelo GP e a classe é a presença ou não do item
-	 * na base de validação
+	 * Pega os rankings de entrada e gera uma base onde cada par <user,item>  uma instancia.
+	 * Cada instncia contm todos os terminais que sao utilizados pelo GP e a classe  a presena ou no do item
+	 * na base de validao
 	 * 
-	 * @param dados InputData contendo todos os usuários lidos dos rankings de entrada
+	 * @param dados InputData contendo todos os usurios lidos dos rankings de entrada
 	 * @param output_folder 
 	 * @throws FileNotFoundException 
 	 */
@@ -189,12 +189,12 @@ public class PlainDataset {
 		
 
 	/**
-	 * Pega os rankings de entrada e gera uma base onde cada par <user,item> é uma instancia.
-	 * Cada instância contém todos os terminais que sao utilizados pelo GP. Esse metodo nao insere a classe das instancias.
+	 * Pega os rankings de entrada e gera uma base onde cada par <user,item>  uma instancia.
+	 * Cada instncia contm todos os terminais que sao utilizados pelo GP. Esse metodo nao insere a classe das instancias.
 	 * Os datasets gerados aqui serao utilizados pelo GP    
 	 * 
 	 * 
-	 * @param dados InputData contendo todos os usuários lidos dos rankings de entrada
+	 * @param dados InputData contendo todos os usurios lidos dos rankings de entrada
 	 * @param output_folder 
 	 * @throws FileNotFoundException 
 	 */
@@ -274,7 +274,7 @@ public class PlainDataset {
 				output.write(line_data+"\n");
 			}
 			
-			//usa substring para retirar o último ponto e virgula (;) da linha
+			//usa substring para retirar o ltimo ponto e virgula (;) da linha
 			output_useritemmap.write(useritemmap.substring(0, useritemmap.length()-1)+"\n");
 				
 		}

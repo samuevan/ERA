@@ -28,7 +28,7 @@ import ec.app.util.Utils;
 import ec.gp.*;
 import ec.gp.koza.*;
 import ec.simple.*;
-import librec.data.SparseVector;
+//import librec.data.SparseVector;
 //import java.util.concurrent.ThreadLocalRandom;
 import java.util.Random;
 
@@ -44,7 +44,13 @@ public class GPRA_Problem extends GPProblem implements
 	public double meanAgreements;
 	private int numUsedRanks = 0;
 	public double[] scores; //= new double[20];//{-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000};
+	public Vector<Double> svd_coeficients;
 	private double reduce_users = 0.33;
+	public double GS_avg;
+	public double GS_median;	
+	public double GS_max;
+	public double GS_min;
+	public double GS_std;
 	public double[] genericDoubles; //= new double[20];
 	//public SparseVector genericDoubles;
 	public double probTop10 = 0;
@@ -59,7 +65,7 @@ public class GPRA_Problem extends GPProblem implements
 		
 		
 		super.setup(state, base);
-		//TODO pegar os parâmetros a partir do arquivo de parametros
+		//TODO pegar os parmetros a partir do arquivo de parametros
 		
 		System.out.println("Evaluation");
 		dados = GPRA_Principal.getData();
@@ -132,13 +138,13 @@ public class GPRA_Problem extends GPProblem implements
 					//genericDoubles.add(gds,item.getGenericValue(gds));
 					genericDoubles[gds] = item.getGenericValue(gds);
 				}
-			}else{
+			}/*else{
 				
 				for (int gds = 0; gds < item.getGenericValuesSize(); gds++){
 					//genericDoubles.add(gds,item.getGenericValueSparse(gds));
 					genericDoubles[gds] = item.getGenericValueSparse(gds);
 				}
-			}
+			}*/
 			
 			
 			
@@ -257,13 +263,13 @@ public class GPRA_Problem extends GPProblem implements
 							//genericDoubles.add(gds,item.getGenericValue(gds));
 							genericDoubles[gds] = item.getGenericValue(gds);
 						}
-					}else{
+					}/*else{
 						
 						for (int gds = 0; gds < item.getGenericValuesSize(); gds++){
 							//genericDoubles.add(gds,item.getGenericValueSparse(gds));
 							genericDoubles[gds] = item.getGenericValueSparse(gds);
 						}
-					}
+					}*/
 										
 					//Get the values of rank scores
 					scores = new double[20];
@@ -276,6 +282,15 @@ public class GPRA_Problem extends GPProblem implements
 						bordascores[nr] = item.getBordaScore(nr);
 					}*/
 					
+					
+					
+					GS_avg = item.getGS_avg();
+					GS_median = item.getGS_median();
+					GS_max = item.getGS_max();
+					GS_min = item.getGS_min();
+					GS_std = item.getGS_std();
+					
+					
 					probTop10 = item.getProbTop10();
 					
 					timesOnRankings = item.getTimesR();
@@ -285,6 +300,8 @@ public class GPRA_Problem extends GPProblem implements
 					meanAgreements = item.getMeanAgreements();
 					bordaComplete = item.getBordaScoreComplete();
 
+					
+					svd_coeficients = item.getSVDCoeficients();
 					combMNZ = item.getCombMNZ();
 					combSUM = item.getCombSUM();
 					RRF = item.getRRF();
@@ -396,7 +413,7 @@ public class GPRA_Problem extends GPProblem implements
 			
 			
 			//TODO dados.getNumUsersTestHasElem(); retorna o numero de usuarios no arquivo de teste
-			//contudo, pode ser que um usuario esteja no teste mas não nos rankings de entrada
+			//contudo, pode ser que um usuario esteja no teste mas no nos rankings de entrada
 			//na ML1M isso acontece com o user 5850
 			
 			int a = dados.getNumUsersTestHasElem();

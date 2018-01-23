@@ -33,7 +33,7 @@ public class MNZ extends GPNode{
 	{
 		DoubleData rd = ((DoubleData) (input));
 		rd.x = ((GPRA_Problem) problem).combMNZ; //TODO pode ser que eu use um vetor na classe de 
-		                                                   //avalia��o e aqui eu pegue a posicao que eu quero 
+		                                                   //avaliao e aqui eu pegue a posicao que eu quero 
 	}
 	
 	

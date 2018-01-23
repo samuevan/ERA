@@ -87,7 +87,7 @@ public class MyIndividual extends GPIndividual{
 				if(curr.children.length == 0)
 				{
 					String nodeName = curr.toString();
-					//verificaçao mal feita de que o nó na verdade é uma constante real
+					//verificaao mal feita de que o n na verdade  uma constante real
 					if(nodeName.contains(".")){
 						nodeName = "const";
 					}
@@ -103,12 +103,12 @@ public class MyIndividual extends GPIndividual{
 				
 				
 				for(int i = 0; i < curr.children.length; i++){
-					//Se o numero de filhos é zero chegamos a uma folha
+					//Se o numero de filhos  zero chegamos a uma folha
 					if(curr.children[i].children.length == 0)
 					{
 						String nodeName = curr.children[i].toString();
 						
-						//TODO Consertar verificaçao mal feita de que o nó na verdade é uma constante real
+						//TODO Consertar verificaao mal feita de que o n na verdade  uma constante real
 						if(nodeName.contains(".")){
 							nodeName = "const";
 						}

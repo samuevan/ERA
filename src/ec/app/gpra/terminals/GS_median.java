@@ -4,13 +4,14 @@ import ec.Problem;
 import ec.app.gpra.DoubleData;
 import ec.app.gpra.GPRA_Problem;
 import ec.gp.*;
+
 //import ec.gp.GPData;
 //import ec.gp.GPIndividual;
 
 
-public class GenericAtt2 extends GPNode{
+public class GS_median extends GPNode{
 
-    public String toString() { return "gd2"; }
+    public String toString() { return "GS_median"; }
 
 /*
   public void checkConstraints(final EvolutionState state,
@@ -34,8 +35,8 @@ public class GenericAtt2 extends GPNode{
 			final GPIndividual individual, final Problem problem) 
 	{
 		DoubleData rd = ((DoubleData) (input));
-		rd.x = ((GPRA_Problem) problem).genericDoubles[2];
-//		/rd.x = ((GPRA_Problem) problem).genericDoubles.get(2); //TODO pode ser que eu use um vetor na classe de 
+		rd.x = ((GPRA_Problem) problem).GS_median;
+		//rd.x = ((GPRA_Problem) problem).genericDoubles.get(0); //TODO pode ser que eu use um vetor na classe de 
 		                                                   //avaliacao e aqui eu pegue a posicao que eu quero 
 	}
 	

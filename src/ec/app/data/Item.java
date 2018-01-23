@@ -1,6 +1,6 @@
 package ec.app.data;
+import java.util.Collections;
 import java.util.Vector;
-import librec.data.SparseVector;
 
 
 
@@ -10,8 +10,18 @@ public class Item{
 	
 	private int itemID;
 	private int numRankings = 0;
-	private SparseVector sparse_doubles;
+	private Vector<Double> svd_coeficients; 
+	//private SparseVector sparse_doubles;
 	private Vector<Integer> positions;
+	//given_scores stores the scores attributed to the item by the each of the input rankings
+	//this vector is paired with the vector positions.
+	private double GS_avg = Double.NaN;
+	private double GS_median = Double.NaN;
+	private double GS_max = Double.NaN;
+	private double GS_min = Double.NaN;
+	private double GS_std = Double.NaN;
+	
+	private Vector<Double> given_scores;  
 	private Vector<Double> rankScores;
 	private Vector<Double> bordaScores; //Esse nao eh o bordascore, segundo a definicao de borda
 	private Vector<Double> actual_bordaScores; 
@@ -38,6 +48,8 @@ public class Item{
 		
 		itemID = id;
 		numRankings = numR;
+		svd_coeficients = new Vector<Double>(4);
+		given_scores = new Vector<Double>(numRankings);
 		positions = new Vector<Integer>(numRankings);
 		rankScores = new Vector<Double>(numRankings);		
 		bordaScores = new Vector<Double>(numRankings);
@@ -68,6 +80,7 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 		for(int i = 0; i < numRankings; i++)
 		{
 			positions.add(-1);
+			given_scores.add(Double.NaN);
 			rankScores.add(0.0);
 			bordaScores.add(0.0);
 			actual_bordaScores.add(0.0);
@@ -85,13 +98,13 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 		this.genericDoubles = new Vector<Double>(values);
 	}
 	
-	public void setGenericValuesSparse(int size, double[] values){
+	/*public void setGenericValuesSparse(int size, double[] values){
 		this.sparse_doubles = new SparseVector(size, values);
 	}
 	
 	public double getGenericValueSparse(int pos){
 		return this.sparse_doubles.get(pos);
-	}
+	}*/
 	
 
 	public double getGenericValue(int pos){
@@ -103,12 +116,20 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	}
 	
 	public int getGenericValuesSize(){
-		if (this.use_sparse)
-			return this.sparse_doubles.size();
-		else
-			return this.genericDoubles.size();
+		/*if (this.use_sparse)
+			//return this.sparse_doubles.size();
+		else*/
+		return this.genericDoubles.size();
 	}
 	
+	
+	public Vector<Double> getSVDCoeficients(){
+		return svd_coeficients;
+	}
+	
+	public void setSVDCoeficients(Vector<Double> coefs){
+		this.svd_coeficients = coefs;
+	}
 	
 	
 	public void setRankScore(double score, int rankPos){
@@ -132,13 +153,17 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 		positions.set(rankPos, pos);
 	}
 	
+	public void setGiven_score(int pos, double given_score){
+		given_scores.set(pos,given_score);
+	}
+	
 	public double getRankScore(int rankPos){
 		return rankScores.get(rankPos);
 	}
 	
 	/**
 	 * 
-	 * @param rankPos indica qual é ranking de interesse.
+	 * @param rankPos indica qual  ranking de interesse.
 	 * @return o valor de bordaScore para o item presente no score escolhido
 	 */
 	public double getBordaScore(int rankPos){
@@ -165,9 +190,7 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	
 	public String toString(){
 		
-		String s = ""+itemID;
-		
-		
+		String s = ""+itemID;				
 		
 		return s;
 	}
@@ -328,6 +351,122 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	public double getCombMNZ(){
 		return this.combMNZscore;
 	}
+	
+	
+	public double getGS_avg() {
+		if (GS_avg == Double.NaN)
+			setGS_avg();		
+		return GS_avg;
+	}
+
+
+	public void setGS_avg() {
+		GS_avg = 0.0;
+		int not_nan = 0;
+		for (int i = 0; i < numRankings; i++)
+			if (!given_scores.get(i).isNaN()){
+				GS_avg += given_scores.get(i);
+				not_nan++;
+			}
+		GS_avg /= not_nan;
+		
+	}
+
+
+	public double getGS_median() {
+		if (GS_median == Double.NaN)
+			setGS_median();
+		return GS_median;
+	}
+
+
+	public void setGS_median() {
+		GS_median = 0.0;
+		Vector<Double> valid_given_scores = new Vector<Double>();
+		for (int i = 0; i < numRankings; i++)
+			if (!given_scores.get(i).isNaN()){
+				valid_given_scores.add(given_scores.get(i));
+			}
+		
+		Collections.sort(valid_given_scores);		
+		if (valid_given_scores.size()%2 == 0){
+			double aux = valid_given_scores.get((int)Math.ceil(valid_given_scores.size()/2)) +
+					valid_given_scores.get((int)Math.floor(valid_given_scores.size()/2));
+			aux /= 2;					
+			 GS_median = aux; 
+		}
+		else
+			GS_median = valid_given_scores.get((int)Math.ceil(valid_given_scores.size()/2));
+		
+	}
+
+
+	public double getGS_max() {
+		if (GS_max == Double.NaN)
+			setGS_median();
+		return GS_max;
+	}
+
+
+	public void setGS_max() {
+		
+		Vector<Double> valid_given_scores = new Vector<Double>();
+		for (int i = 0; i < numRankings; i++)
+			if (!given_scores.get(i).isNaN()){
+				valid_given_scores.add(given_scores.get(i));
+			}
+		
+		GS_max = Collections.max(valid_given_scores);
+	}
+
+
+	public double getGS_min() {
+		if (GS_min == Double.NaN)
+			setGS_min();
+		return GS_min;
+	}
+
+
+	public void setGS_min() {
+		
+		Vector<Double> valid_given_scores = new Vector<Double>();
+		for (int i = 0; i < numRankings; i++)
+			if (!given_scores.get(i).isNaN()){
+				valid_given_scores.add(given_scores.get(i));
+			}
+		
+		GS_min = Collections.min(valid_given_scores);
+	}
+
+
+	public double getGS_std() {
+		if (GS_std == Double.NaN)
+			setGS_std();
+		return GS_std;
+	}
+
+
+	public void setGS_std() {
+		double aux = 0.0;
+		int not_nan = 0;
+		for (int i = 0; i < numRankings; i++){
+			if (!given_scores.get(i).isNaN()){
+				aux += Math.pow((given_scores.get(i)-getGS_avg()),2);
+				not_nan++;
+			}
+		}
+		
+		if (not_nan <=1)
+			aux = 0;
+		else
+			aux = Math.sqrt(aux/(not_nan-1));
+		
+		GS_std = aux;
+	}
+
+	
+	
+	
 	
 
 }

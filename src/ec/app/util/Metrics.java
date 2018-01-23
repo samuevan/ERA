@@ -10,7 +10,7 @@ import ec.app.data.User;
 public class Metrics {
 	
 	
-	//TODO qual é o valor do dcg@100 para uma lista com apenas 10 elementos?
+	//TODO qual  o valor do dcg@100 para uma lista com apenas 10 elementos?
 	public static double dcg(Vector<Integer> vet, int k) {
 
 		double res = 0.0;
@@ -44,13 +44,13 @@ public class Metrics {
 	}
 	
 	/**
-	 * TODO estou fazendo uma funcao para calcular o NDCG e outra para calcular o NDCG m�dio do conjunto de testes,
+	 * TODO estou fazendo uma funcao para calcular o NDCG e outra para calcular o NDCG mdio do conjunto de testes,
 	 * 
 	 * 
 	 * 
-	 * @param ranking Lista de itens ordenados que ser� comparada com a ordena��o perfeita
-	 * @param real Ordena��o real(perfeita) dos itens
-	 * @param real_rates O valor de rate de cada um dos itens da ordena��o real, 
+	 * @param ranking Lista de itens ordenados que ser comparada com a ordenao perfeita
+	 * @param real Ordenao real(perfeita) dos itens
+	 * @param real_rates O valor de rate de cada um dos itens da ordenao real, 
 	 * os valores estao ordenados de acordo com a numeracao dos itens
 	 * @return Valor do NDCG para o ranking
 	 */

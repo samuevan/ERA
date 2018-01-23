@@ -28,14 +28,14 @@ public class Score0 extends GPNode{
     public int expectedChildren() { return 0; }
 
     
-    //TODO Testar para ver se eu posso alterar a passagem de parametros desse método
+    //TODO Testar para ver se eu posso alterar a passagem de parametros desse mtodo
 	public void eval(final EvolutionState state, final int thread,
 			final GPData input, final ADFStack stack,
 			final GPIndividual individual, final Problem problem) 
 	{
 		DoubleData rd = ((DoubleData) (input));
 		rd.x = ((GPRA_Problem) problem).scores[0]; //TODO pode ser que eu use um vetor na classe de 
-		                                                   //avalia��o e aqui eu pegue a posicao que eu quero 
+		                                                   //avaliao e aqui eu pegue a posicao que eu quero 
 	}
 	
 	

@@ -34,7 +34,7 @@ public class Pair<T extends Comparable<T>,U extends Comparable<U>> implements Co
 			Pair<T,U> p1 = (Pair<T,U>) o1;
 			Pair<T,U> p2 = (Pair<T,U>) o2;
 			
-			return ((int)p1.getSecond()) - ((int)p2.getSecond()); //TODO int??? é o tipo de retorno do comparator, mas é estranho
+			return ((int)p1.getSecond()) - ((int)p2.getSecond()); //TODO int???  o tipo de retorno do comparator, mas  estranho
 		}
 		*/
 		/*@Override
@@ -61,6 +61,14 @@ public class Pair<T extends Comparable<T>,U extends Comparable<U>> implements Co
 		public int compareTo(Pair<T, U> o) {
 			// TODO Auto-generated method stub
 			return this.getSecond().compareTo(o.getSecond());
+		}
+		
+		public String toString(){
+			
+			String s = "(";
+			s += first+","+second+")";
+			return s;
+					
 		}
 		
 		

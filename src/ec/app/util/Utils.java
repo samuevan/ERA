@@ -34,7 +34,57 @@ public class Utils {
 		vetItem.insertElementAt(itemId, i);
 
 	}
+	
+	public static void normalize(Vector vet2norm,boolean sorted){
+	
+		
+		
+		if (vet2norm.firstElement() instanceof Double){
+			
+			Pair<Double,Double> max_min = null;
+			if (sorted)
+				max_min = new Pair<Double, Double>((double)vet2norm.firstElement(), (double)vet2norm.lastElement());									
+			else
+				//GET maxmin
+				System.out.println("Unimplemented");
+			
+			for (int i = 0; i < vet2norm.size(); i++){
+				double new_value = ((double) vet2norm.get(i)-max_min.getSecond());
+				new_value /= max_min.getFirst() - max_min.getSecond();
+				vet2norm.set(i,new_value);
+			}
 
+			
+		}
+		else if (vet2norm.firstElement() instanceof Pair){
+			//in this case the vector is a pair where the value to be normalized is the second one
+			Pair<Double,Double> max_min = null;
+			if (sorted)
+				max_min = new Pair<Double, Double>(((Pair<Integer,Double>)vet2norm.firstElement()).getSecond(), 
+												   ((Pair<Integer,Double>)vet2norm.lastElement()).getSecond());									
+			else
+				//GET maxmin
+				System.out.println("Unimplemented");
+			
+			for (int i = 0; i < vet2norm.size(); i++){
+				double new_value = ((Pair<Integer,Double>) vet2norm.get(i)).getSecond()-max_min.getSecond();
+				new_value /= max_min.getFirst() - max_min.getSecond();
+				((Pair<Integer,Double>)vet2norm.get(i)).setSecond(new_value);
+			}
+
+			
+			
+		}
+		
+	}
+	
+	public static void normalize(double[] vet2norm){
+		
+		
+	}
+
+	
+	
 	public static double Jaccard(Vector<Integer> v1, Vector<Integer> v2) {
 
 		Set<Integer> A = new LinkedHashSet<Integer>(v1);
@@ -204,7 +254,7 @@ public class Utils {
 	}
 	
 	/**
-	 * Retorna uma matriz com os items que tiveram um hit na validação, considera os rankings separadamente
+	 * Retorna uma matriz com os items que tiveram um hit na validao, considera os rankings separadamente
 	 * 
 	 * @param users Vetor de usuarios
 	 * @return items que tiveram um hit na validacao separados por ranking

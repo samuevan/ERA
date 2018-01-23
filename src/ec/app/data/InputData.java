@@ -20,12 +20,15 @@ import java.util.Vector;
 
 
 
+
+
 import ec.app.data.User;
 //import lda_gpra.LDARA;
 //import lda_gpra.LDAUser;
 import ec.app.gpra.GPRA_Principal;
 import ec.app.util.Metrics;
 import ec.app.util.Pair;
+import ec.app.util.Utils;
 
 
 
@@ -41,8 +44,8 @@ public class InputData {
 	
 	public Vector<User> Usuarios;
 	private int numItems;
-	private int numItemsToUse = 20; //alterar a entrada desse valor, ainda tem problemas com a inicialização do usuario
-	//private int sizeRankings = 20; //TODO alterar, pegar esse valor como parâmetro
+	private int numItemsToUse = 20; //alterar a entrada desse valor, ainda tem problemas com a inicializacao do usuario
+	//private int sizeRankings = 20; //TODO alterar, pegar esse valor como parametro
 	private int numRankings;
 	private int numUsersTestHasElem = 0;
 	private int numUsersValHasElem = 0;
@@ -77,7 +80,8 @@ public class InputData {
             }             
             map_group_users.put(group_id,group_users);
             
-        }      
+        }   
+        group_scanner.close();
         return map_group_users;
     } 
     
@@ -99,7 +103,7 @@ public class InputData {
 		Scanner scann_input = new Scanner(input_ranking_file);
 		Vector<Vector<Integer>> input_ranking = new Vector<Vector<Integer>>();
 		//Read the ranking of each user (each line corresponds to a user
-		int user_pos = 0;
+		
 		while (scann_input.hasNextLine()){
 			String line_user[] = scann_input.nextLine().split("\t");				
 			String items[] = line_user[1].substring(1, line_user[1].length()-1).split(",");
@@ -115,9 +119,59 @@ public class InputData {
 			
 		}
 		
-		
+		scann_input.close();
 		return input_ranking;
 	}
+	
+	
+	
+	/**
+	 * Read a file containing the input rankings for all the users and returns these rankings
+	 * 
+	 * @param input_ranking The input rankings for all the users
+	 * @return A mapping where the key is the user_id and the value is the ranking associated to this user
+	 * Different from LoadInputRankings in this method the ranking is represented as a list of pairs <item,score>    
+	 * e.g [<145,0.345>,<124,0.245>,<1455,0.205>,...,<1,0.005>]
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	private HashMap<Integer,Vector<Pair<Integer,Double>>> LoadInputRankingMap(File input_ranking_file) throws FileNotFoundException{
+		
+		Scanner scann_input = new Scanner(input_ranking_file);
+		HashMap<Integer,Vector<Pair<Integer,Double>>> input_ranking = new HashMap<Integer,Vector<Pair<Integer,Double>>>();
+		//Read the ranking of each user (each line corresponds to a user
+		
+		while (scann_input.hasNextLine()){
+			String line_user[] = scann_input.nextLine().split("\t");
+			int user_id = Integer.parseInt(line_user[0]);
+			String items[] = line_user[1].substring(1, line_user[1].length()-1).split(",");
+			
+			
+			
+			//Vector<Integer> user_ranking_items = new Vector<Integer>();
+			//Vector<Double> user_ranking_scores = new Vector<Double>();
+			Vector<Pair<Integer,Double>> user_ranking = new Vector<Pair<Integer,Double>>();
+			for (String item_and_score : items){
+				
+				String ins[] = item_and_score.split(":");
+				int item_id = Integer.parseInt(ins[0]);
+				double item_score = Double.parseDouble(ins[1]);
+				
+				user_ranking.add(new Pair<Integer, Double>(item_id,item_score));
+				//user_ranking_items.add(item_id);
+				//user_ranking_scores.add(item_score);
+			}
+			Utils.normalize(user_ranking,true);
+			//Utils.normalize(user_ranking_scores,true);
+			input_ranking.put(user_id,user_ranking);	
+			
+		}
+		
+		scann_input.close();
+		return input_ranking;
+	}
+	
+	
 	
 	
 	private HashSet<Integer> itemsUnion(Vector<Integer> users_in_grp, HashMap<Integer,Vector<Integer>> train_ratings){
@@ -136,6 +190,24 @@ public class InputData {
 		return items_union;
 	}
 	
+	
+	private void removeItemsInTrain(Vector<Pair<Integer,Double>> current_rank, HashSet<Integer> group_train_items){
+
+		Vector<Pair<Integer,Double>> to_remove = new Vector<Pair<Integer,Double>>();
+		for (Integer item_id : group_train_items){
+			System.out.println();			
+			for(Pair<Integer,Double> item_id_score : current_rank){
+				if (item_id.compareTo(item_id_score.getFirst()) == 0){
+					//usr_ranking.remove(item_id); //remove the items already rated by any group user
+					to_remove.add(item_id_score);
+				}
+			}
+		}
+		if (to_remove.size() > 0)
+			current_rank.removeAll(to_remove);
+
+		
+	}
 	
 	
     public void ExtractGroupFeatures(Vector<File> inputs, File groupfile, File train_ratings_file, File test_file,  int numItemsToUse, int numItemsToSuggest) throws FileNotFoundException{
@@ -157,11 +229,11 @@ public class InputData {
     		//read the input file correspondent to the base recommender that will be used
     		//in the future we can use more than one ranking as input, therefore the function signature 
     		//receives a vector of files
-    		Vector<Vector<Integer>> input_ranking =	LoadInputRanking(input_ranking_file);
+    		HashMap<Integer,Vector<Pair<Integer,Double>>> input_ranking_map =LoadInputRankingMap(input_ranking_file);
+    		//Vector<Vector<Integer>> input_ranking =	LoadInputRanking(input_ranking_file);
     		
     		for(Integer group_id : group_ids_sorted){//group_map.keySet()){
-
-
+    			
     			Vector<Integer> users_in_grp = group_map.get(group_id); //get the users in the group
     			int grp_size = users_in_grp.size();
     			User grp_usr;    			
@@ -185,33 +257,64 @@ public class InputData {
     				int usr_position = map_user_posicao.get(usr);//take the position the user should have in the input_ranking
 
     				//Cuts the input ranking to use just numItemsToUse
-    				Vector<Integer> usr_ranking = new Vector<Integer>(input_ranking.get(usr_position).
-    						subList(0, numItemsToUse));
+    				//Vector<Integer> usr_ranking = null;
+    				Vector<Pair<Integer,Double>> usr_ranking_item_score = null;
+    				try{
+    					usr_ranking_item_score = new Vector<Pair<Integer,Double>>(input_ranking_map.get(usr).subList(0, numItemsToUse));
+    					//usr_ranking = new Vector<Integer>(input_ranking.get(usr_position).subList(0, numItemsToUse));
+    				}
+    				catch (Exception e){
+    					System.out.println("ERRO");
+    				}
 
 
-    				grp_usr.addOriginalRanking(usr_ranking); //store the ranking correspondent to the user in the group    			
-    				Vector<Integer> original_ranking = new Vector<Integer>(usr_ranking); //clone the original ranking to use the positions the items are in this ranking
-    				usr_ranking.removeAll(group_train_items); //remove the items already rated by any group user
-
-    				for (int item_pos = 0; item_pos < usr_ranking.size(); item_pos++){
-    					int item_id = usr_ranking.get(item_pos);     				
+    				grp_usr.addOriginalRankingWithScores(usr_ranking_item_score); //store the ranking correspondent to the user in the group    			
+    				Vector<Integer> original_ranking_itemids = new Vector<Integer>(); //clone the original ranking to use the positions the items are in this ranking
+    				
+    				for (Pair<Integer,Double> item_id_score : usr_ranking_item_score){
+    					original_ranking_itemids.add(item_id_score.getFirst());
+    				}
+    				//REMOVE items already in train from rankings
+    				
+    				removeItemsInTrain(usr_ranking_item_score,group_train_items);
+    				for (int item_pos = 0; item_pos < usr_ranking_item_score.size(); item_pos++){
+    					Pair<Integer,Double> item_id_score = usr_ranking_item_score.get(item_pos); 
+    					int item_id = item_id_score.getFirst();     				
     					grp_usr.addItem(item_id);
-    					int original_item_pos = original_ranking.indexOf(item_id);
+    					int original_item_pos = original_ranking_itemids.indexOf(item_id);
     					grp_usr.setItemPosition(item_id, usr_pos_in_grp, original_item_pos+1);
+    					double item_score = item_id_score.getSecond();
+    					grp_usr.setItemGivenScore(item_id,usr_pos_in_grp,item_score);
     					//grp_usr.setItemScore(item_id, usr_pos_in_grp, Metrics.calcRankNorm(it+1, sizeRankings));
     				}    			    			
 
     				usr_pos_in_grp++;
     			}
-    			//Chama todas as funções de calculo de feature;;;
-    			grp_usr.ComputeFeatures();    		    		
+    			//Chama todas as funcoes de calculo de feature;;;
+    			//Changed to the end of input_rankings loop
+    			//grp_usr.ComputeFeatures();    		    		
     		}
     		
     		pos_input_ranking++;
 
     	}
+    	//Effectivelly calls the method to compute the features for each user
+    	group_ids_sorted = group_map.keySet().toArray(group_ids_sorted);
+    	Arrays.sort(group_ids_sorted);
+    	for(Integer group_id : group_ids_sorted){
+    		System.out.println(group_id);
+    		User grp_usr = Usuarios.get(group_id);
+    		grp_usr.ComputeFeatures();
+    	}
+    	
+    	
+    	
+    	
+    	
+    	
     	
 		readGroupsTestFile(test_file, groupfile, "test");
+		
 
 
     }
@@ -291,7 +394,7 @@ public class InputData {
 			for(int rankId = 0 ; rankId < scanns.size(); rankId++){
 				String lineUser[] = scanns.get(rankId).nextLine().split("\t");
 
-				String items[] = lineUser[1].substring(1, lineUser[1].length()-1).split(","); //exclui os [ do começo e do final e quebra por virgula 
+				String items[] = lineUser[1].substring(1, lineUser[1].length()-1).split(","); //exclui os [ do comeco e do final e quebra por virgula 
 			
 				
 				//controla o numero de itens usados na entrada, se o parametro passado no construtor for igual ou menor a zero usa o tamanho 
@@ -309,14 +412,14 @@ public class InputData {
 					
 				}
 				
-				//itera pelos items de sugeridos para cada usuário
+				//itera pelos items de sugeridos para cada usuario
 				//adiciona esses itens para o usuario em questao
 				for (int it = 0; it < numItemsToUse; it++)
 				{
 					String itemid_val = items[it].split(":")[0];
 					int item = Integer.parseInt(itemid_val); //<item>:<score>
 					
-					//user.addItemOriginalRanking(item, rankId, it); //método usando array
+					//user.addItemOriginalRanking(item, rankId, it); //metodo usando array
 					user.addItemOriginalRanking(item, rankId);//metodo usando vector
 									
 					//A insercao ja verifica se o item ja existe na base
@@ -351,7 +454,7 @@ public class InputData {
 					
 					int pos_r = item.getPosition(rank_id);
 					
-					//verifica se o item está presente no ranking corrente
+					//verifica se o item esta presente no ranking corrente
 					if(pos_r != -1){
 						
 						int numi = user.getNumItems();
@@ -371,7 +474,7 @@ public class InputData {
 					}
 					
 					//##################################################
-					//Calcula o numero de vezes que o item está no top10
+					//Calcula o numero de vezes que o item esta no top10
 					
 					//TODO pass this as parameter
 					if((pos_r != -1) && (pos_r <= 0.30*this.numItemsToUse))
@@ -395,7 +498,7 @@ public class InputData {
 				item.setProbTop10(p);
 				item.setTimesR(timesR);
 
-				item.calcAgreements(2); // TODO: definir janela de concordância por parâmetro
+				item.calcAgreements(2); // TODO: definir janela de concordancia por parametro
 				
 				
 			}
@@ -423,7 +526,7 @@ public class InputData {
 		
 		free_map_posicao_user();
 		readTestFile(testInput,"test");
-		//Libera espaço dos rankings de baseline
+		//Libera espaco dos rankings de baseline
 		/*for (User u : Usuarios){
 			u.freeOriginalRankings();
 		}*/
@@ -471,7 +574,7 @@ public class InputData {
 			String[] items =  line.split(":")[1].replaceAll("[( )]", "").split(";");
 			
 			//cria um novo vetor para armazenar os items recomendados para o usuario
-			//o tamanho do veteor de cada usuario indica o número de items (aka linhas no arquivo de treino)
+			//o tamanho do veteor de cada usuario indica o numero de items (aka linhas no arquivo de treino)
 			//correspondentes aquele usuario 
 			items_per_usr.add(new Vector<Integer>());
 			
@@ -486,6 +589,8 @@ public class InputData {
 			usr_pos++;
 			
 		}
+		
+		scann_useritem_map.close();
 		
 		
 		Scanner data_file = new Scanner(Features_dataset);
@@ -511,13 +616,13 @@ public class InputData {
 					for (int pos_att = 0; pos_att < usr_item_attributes.length; pos_att++){						
 						atts_values[pos_att] = Double.parseDouble(usr_item_attributes[pos_att]);																								 
 					}
-										
-					user.setItemGenericValuesSparse(item_id,usr_item_attributes.length,atts_values);
+					//TODO if using sparse fix above					
+					//user.setItemGenericValuesSparse(item_id,usr_item_attributes.length,atts_values);
 				}
 				else
 				{	
 					for (int pos = 0; pos < usr_item_attributes.length; pos++){
-						//isere o atributo para o item considerando que é um atributo generico
+						//isere o atributo para o item considerando que eh um atributo generico
 						user.setItemGenericValue(item_id, pos, Double.parseDouble(usr_item_attributes[pos]));
 					} 
 				} 
@@ -528,7 +633,7 @@ public class InputData {
 			
 		}
 				
-		
+		data_file.close();
 		readTestFile(testInput, "test");
 		this.numItemsToSuggest = numItemsToSug;
 		readTestFile(validationInput, "validation");
@@ -585,10 +690,10 @@ public class InputData {
 	/**
 	 * 
 	 * @param testInput arquivo com os dados a serem lidos
-	 * @param type - indica se o arquivo é um arquivo de teste um ou arquivo de validacao ("test","validation")
+	 * @param type - indica se o arquivo eh um arquivo de teste um ou arquivo de validacao ("test","validation")
 	 * @throws FileNotFoundException
 	 */
-	//TODO não esta lendo a primeira linha do arquivo CORRIGIR
+	//TODO nao esta lendo a primeira linha do arquivo CORRIGIR
 	public void readTestFile(File testInput, String type) throws FileNotFoundException{
 		
 		
@@ -625,6 +730,7 @@ public class InputData {
 					
 					
 					usr_i = map_user_posicao.get(usr);
+
 					Usuarios.get(usr_i).testRanking.add(item);
 					//Usuarios.get(usr_i).testRanking2.add(new Pair<Integer,Integer>(item,value));
 					numUsersTestHasElem++;
@@ -680,8 +786,8 @@ public class InputData {
 			
 		}
 		numUsersValHasElem++;
-		numUsersTestHasElem++;//add 1 para contar o primeiro usuário
-		//Adciona o último elemento do arquivo
+		numUsersTestHasElem++;//add 1 para contar o primeiro usuario
+		//Adciona o ultimo elemento do arquivo
 		if(type.equalsIgnoreCase("test")){
 			if(usr == usr_ant ){
 				usr_i = map_user_posicao.get(usr);
@@ -953,7 +1059,7 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 
 	public void competitionTable(User u){
 
-		// TODO passar esses valores por parâmetro ou decidi-los com base no
+		// TODO passar esses valores por parametro ou decidi-los com base no
 		// tamanho da entrada
 		
 		int min_dist_to_better = 2;
@@ -980,7 +1086,7 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 		int coalition_table[][] = new int[u.getNumItems()][u.getNumItems()];
 		HashMap<Integer, Integer> items_pos = new HashMap<Integer, Integer>();
 
-		// hash para mapear cada item do usuário em uma posicao que será usada
+		// hash para mapear cada item do usuario em uma posicao que sera usada
 		// na tabela comp_table
 		int posi = 0;
 		while (iter.hasNext()) {
@@ -997,7 +1103,7 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 			// System.out.println(x);
 			for (int i = 0; i < u.getNumRankings(); i++) {
 				Item item1 = u.getItem(x);
-				if((item1.getPosition(i) > 0)){ //Garante que só são comparados itens que estão no mesmo ranking 
+				if((item1.getPosition(i) > 0)){ //Garante que soh sao comparados itens que estao no mesmo ranking 
 
 					for (int j = 0; j < u.getOriginalRanking(i).size(); j++) {
 						int item2x = u.getItemOriginalRanking(i, j);
@@ -1006,7 +1112,7 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 						Item item2 = u.getItem(item2x);
 
 						// caso o item1 esteja em uma posicao anterior ao item2 com
-						// uma distancia de no mínimo min_dist_to_better
+						// uma distancia de no minimo min_dist_to_better
 						// somo mais 1 na tabela de melhor
 						if ((item2.getPosition(i) - item1.getPosition(i)) >= min_dist_to_better) {
 
@@ -1014,7 +1120,7 @@ public void readGroupsTestFile(File testInput, File groupfile, String type) thro
 							int b = items_pos.get(item2x);
 							concordance_table[a][b] += 1;
 						} else {
-							// caso contrário é somado mais 1 na tabela de pior
+							// caso contrario eh somado mais 1 na tabela de pior
 							if ((item1.getPosition(i) - item2.getPosition(i)) >= min_dist_to_worse) {
 								discordance_table[items_pos.get(item1.getItemId())][items_pos
 								                                                    .get(item2x)] += 1;

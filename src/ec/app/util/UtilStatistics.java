@@ -248,11 +248,11 @@ public class UtilStatistics {
 				else
 					test = usr.getValidationRanking();
 			
-			Vector<Vector<Integer>> hits = Utils.hits(usr.getOriginalRankings(),test); //Retorna os itens que tiveram um hit para cada ranking e usuário
+			Vector<Vector<Integer>> hits = Utils.hits(usr.getOriginalRankings(),test); //Retorna os itens que tiveram um hit para cada ranking e usurio
 			Vector<Double> jaccsHits = Utils.JaccadAll(hits); //Calcula o coeficiente de jaccard para todos os pares de rankings considerando somente os itens onde ouve um hit
 			
-			Vector<Integer> inter = Utils.intersectAll(usr.getOriginalRankings()); //Retorna as interseções entre rankings considerando todos os items
-			Vector<Integer> interHits = Utils.intersectAll(hits); //Retorna as interseções entre rankings considerando os itens que tiveram hit
+			Vector<Integer> inter = Utils.intersectAll(usr.getOriginalRankings()); //Retorna as intersees entre rankings considerando todos os items
+			Vector<Integer> interHits = Utils.intersectAll(hits); //Retorna as intersees entre rankings considerando os itens que tiveram hit
 			
 			for(int i = 0; i < jaccs.size(); i++){
 				
@@ -270,7 +270,7 @@ public class UtilStatistics {
 			//System.out.println();
 		}
 		
-		//dividindo pelo número de usuários
+		//dividindo pelo nmero de usurios
 		for(int j = 0; j < size_jacc; j++){
 			
 			meanJacc.set(j, meanJacc.get(j)/input.getNumUsers());
@@ -315,7 +315,7 @@ public class UtilStatistics {
 	}
 	
 	/**
-	 * Imprime o numero medio de hits que cada um dos rankings atinge no arquivo de validação
+	 * Imprime o numero medio de hits que cada um dos rankings atinge no arquivo de validao
 	 * @param input
 	 * @param outStream
 	 * @throws IOException

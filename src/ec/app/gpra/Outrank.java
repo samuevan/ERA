@@ -9,7 +9,7 @@ public class Outrank {
 
 	public void competitionTable(User u){
 
-		// TODO passar esses valores por parâmetro ou decidi-los com base no
+		// TODO passar esses valores por parmetro ou decidi-los com base no
 		// tamanho da entrada
 		
 		int min_dist_to_better = 2;
@@ -36,7 +36,7 @@ public class Outrank {
 		int coalition_table[][] = new int[u.getNumItems()][u.getNumItems()];
 		HashMap<Integer, Integer> items_pos = new HashMap<Integer, Integer>();
 
-		// hash para mapear cada item do usuário em uma posicao que será usada
+		// hash para mapear cada item do usurio em uma posicao que ser usada
 		// na tabela comp_table
 		int posi = 0;
 		while (iter.hasNext()) {
@@ -53,7 +53,7 @@ public class Outrank {
 			// System.out.println(x);
 			for (int i = 0; i < u.getNumRankings(); i++) {
 				Item item1 = u.getItem(x);
-				if((item1.getPosition(i) > 0)){ //Garante que só são comparados itens que estão no mesmo ranking 
+				if((item1.getPosition(i) > 0)){ //Garante que s so comparados itens que esto no mesmo ranking 
 
 					for (int j = 0; j < u.getOriginalRanking(i).size(); j++) {
 						int item2x = u.getItemOriginalRanking(i, j);
@@ -62,7 +62,7 @@ public class Outrank {
 						Item item2 = u.getItem(item2x);
 
 						// caso o item1 esteja em uma posicao anterior ao item2 com
-						// uma distancia de no mínimo min_dist_to_better
+						// uma distancia de no mnimo min_dist_to_better
 						// somo mais 1 na tabela de melhor
 						if ((item2.getPosition(i) - item1.getPosition(i)) >= min_dist_to_better) {
 
@@ -70,7 +70,7 @@ public class Outrank {
 							int b = items_pos.get(item2x);
 							concordance_table[a][b] += 1;
 						} else {
-							// caso contrário é somado mais 1 na tabela de pior
+							// caso contrrio  somado mais 1 na tabela de pior
 							if ((item1.getPosition(i) - item2.getPosition(i)) >= min_dist_to_worse) {
 								discordance_table[items_pos.get(item1.getItemId())][items_pos
 								                                                    .get(item2x)] += 1;
