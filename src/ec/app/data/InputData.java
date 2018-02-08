@@ -195,7 +195,7 @@ public class InputData {
 
 		Vector<Pair<Integer,Double>> to_remove = new Vector<Pair<Integer,Double>>();
 		for (Integer item_id : group_train_items){
-			System.out.println();			
+			//System.out.println();			
 			for(Pair<Integer,Double> item_id_score : current_rank){
 				if (item_id.compareTo(item_id_score.getFirst()) == 0){
 					//usr_ranking.remove(item_id); //remove the items already rated by any group user
@@ -241,6 +241,7 @@ public class InputData {
     			//If it is the first ranking read for the groups    			    			
     			if (pos_input_ranking == 0){
     				grp_usr = new User(group_id,grp_size*inputs.size(),numItemsToUse); //construct a pseudo user that represents the group
+    				grp_usr.setNumRankingsGroup(inputs.size());
     				Usuarios.add(grp_usr);
     			}else{
     				grp_usr = Usuarios.get(group_id);
@@ -302,7 +303,7 @@ public class InputData {
     	group_ids_sorted = group_map.keySet().toArray(group_ids_sorted);
     	Arrays.sort(group_ids_sorted);
     	for(Integer group_id : group_ids_sorted){
-    		System.out.println(group_id);
+    		//System.out.println(group_id);
     		User grp_usr = Usuarios.get(group_id);
     		grp_usr.ComputeFeatures();
     	}
@@ -355,6 +356,12 @@ public class InputData {
 			scann.close();
 		
     }
+    
+    
+    private void normalizeItemsAttributes(){
+    	
+    }
+    
     
     
 	public InputData(Vector<File> inputs, File testInput, File usermap, int numItemsToUse, int numItemsToSuggest) throws IOException{
@@ -659,8 +666,7 @@ public class InputData {
 		
 		ConstructUserMaps(usermap);
 		ExtractGroupFeatures(inputs, groupfile, train_ratings_file, testInput, numItemsToUse, numItemsToSugg);
-		readGroupsTestFile(validationInput, groupfile, "validation");
-		
+		readGroupsTestFile(validationInput, groupfile, "validation");		
 	}
 	
 	

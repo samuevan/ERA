@@ -8,9 +8,9 @@ import ec.gp.*;
 //import ec.gp.GPIndividual;
 
 
-public class RRF extends GPNode{
+public class RRF9 extends GPNode{
 
-    public String toString() { return "RRF"; }
+    public String toString() { return "RRF9"; }
 
 /*
   public void checkConstraints(final EvolutionState state,
@@ -32,7 +32,7 @@ public class RRF extends GPNode{
 			final GPIndividual individual, final Problem problem) 
 	{
 		DoubleData rd = ((DoubleData) (input));
-		rd.x = ((GPRA_Problem) problem).RRF; //TODO pode ser que eu use um vetor na classe de 
+		rd.x = ((GPRA_Problem) problem).RRF.get(9); //TODO pode ser que eu use um vetor na classe de 
 		                                                   //avaliao e aqui eu pegue a posicao que eu quero 
 	}
 	

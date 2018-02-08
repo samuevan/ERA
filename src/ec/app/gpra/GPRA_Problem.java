@@ -28,6 +28,7 @@ import ec.app.util.Utils;
 import ec.gp.*;
 import ec.gp.koza.*;
 import ec.simple.*;
+
 //import librec.data.SparseVector;
 //import java.util.concurrent.ThreadLocalRandom;
 import java.util.Random;
@@ -45,21 +46,31 @@ public class GPRA_Problem extends GPProblem implements
 	private int numUsedRanks = 0;
 	public double[] scores; //= new double[20];//{-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000,-1000};
 	public Vector<Double> svd_coeficients;
-	private double reduce_users = 0.33;
+	private double reduce_users = 1.0;
 	public double GS_avg;
 	public double GS_median;	
 	public double GS_max;
 	public double GS_min;
 	public double GS_std;
+	public int GT; //Ground truth, used to test
+	public double PW_bin_row = Double.NaN;
+	public double PW_bin_col = Double.NaN;
+	public double PW_rank_row = Double.NaN;
+	public double PW_rank_col = Double.NaN;
+	public double PW_logrank_row = Double.NaN;
+	public double PW_logrank_col = Double.NaN;
+	
 	public double[] genericDoubles; //= new double[20];
 	//public SparseVector genericDoubles;
 	public double probTop10 = 0;
 	public double timesOnRankings = 0;
 	public double outrank_score = 0;
-	public double bordaComplete = 0;
-	public double combSUM = 0;
+	
+	public Vector<Double> bordaComplete;;
+	public double bordaComplete_global;;
+	public Vector<Double> combSUM;
 	public double combMNZ = 0;
-	public double RRF = 0;
+	public Vector<Double> RRF;
 	
 	public void setup(final EvolutionState state, final Parameter base) {
 		
@@ -222,10 +233,12 @@ public class GPRA_Problem extends GPProblem implements
 					(state.generation % 10 == 0) &
 					reduce_users < 1.0){
 				
-					Random rdn = new Random(((MySimpleEvolutionState) state).getSeed());
-					for (int rp = 0; rp < random_users.length; rp++){
-						random_users[rp] = rdn.nextInt(users.size());//ThreadLocalRandom.current().nextInt(0, users.size());
-					}
+			    Random rdn = new Random(((MySimpleEvolutionState) state).getSeed());
+				
+				for (int rp = 0; rp < random_users.length; rp++){
+					random_users[rp] = state.random[threadnum].nextInt(users.size());//ThreadLocalRandom.current().nextInt(0, users.size());
+			
+				}
 			}
 			
 			if ((save_ranking) | (reduce_users == 1.0)){
@@ -272,7 +285,7 @@ public class GPRA_Problem extends GPProblem implements
 					}*/
 										
 					//Get the values of rank scores
-					scores = new double[20];
+					scores = new double[numUsedRanks];
 					for(int nr = 0; nr < numUsedRanks; nr++){
 						scores[nr] = item.getRankScore(nr);
 					}
@@ -290,6 +303,12 @@ public class GPRA_Problem extends GPProblem implements
 					GS_min = item.getGS_min();
 					GS_std = item.getGS_std();
 					
+					PW_bin_col = item.getPW_bin_col();
+					PW_bin_row = item.getPW_bin_row();
+					PW_rank_col = item.getPW_rank_col();
+					PW_rank_row = item.getPW_rank_row();
+					PW_logrank_col = item.getPW_logrank_col();
+					PW_logrank_row = item.getPW_logrank_row();
 					
 					probTop10 = item.getProbTop10();
 					
@@ -299,9 +318,9 @@ public class GPRA_Problem extends GPProblem implements
 					
 					meanAgreements = item.getMeanAgreements();
 					bordaComplete = item.getBordaScoreComplete();
-
+					bordaComplete_global = item.getBSC_Global();
 					
-					svd_coeficients = item.getSVDCoeficients();
+					//svd_coeficients = item.getSVDCoeficients();
 					combMNZ = item.getCombMNZ();
 					combSUM = item.getCombSUM();
 					RRF = item.getRRF();

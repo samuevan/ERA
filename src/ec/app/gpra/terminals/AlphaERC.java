@@ -56,6 +56,7 @@ public class AlphaERC extends ERC {
 
 	public void resetNode(EvolutionState state, int thread) {
 		value = state.random[thread].nextDouble();
+		//value = state.random[thread].nextDouble() * 2 - 1.0;
 		//state.random[thread].nextInt(3) +
 		//System.out.println("ERC " + value);
 		

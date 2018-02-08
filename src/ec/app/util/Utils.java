@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
@@ -13,6 +14,7 @@ import java.util.Vector;
 
 import ec.app.data.Item;
 import ec.app.data.User;
+import java.util.Random;
 
 public class Utils {
 
@@ -34,6 +36,47 @@ public class Utils {
 		vetItem.insertElementAt(itemId, i);
 
 	}
+	
+	/**
+	 * Remove a percentage of irrelevant items from the users 
+	 * @param usuarios
+	 */
+	public static void randomUndersampling(Vector<User> users, double perc_reduce, int i2use){
+		
+		System.out.println("Starting Undersampling");
+		if (!(perc_reduce == 0.0 | perc_reduce == 1.0))
+		{
+			
+			
+			for (User user : users){
+				//Get the irrelevant items considering the validation dataset
+				Vector<Integer> irrelevant = new Vector<Integer>();			
+				Iterator<Integer> item_it = user.getItemIterator();
+				while(item_it.hasNext()){				
+					int curr_item_id = item_it.next();				
+					if (!user.getValidationRanking().contains(curr_item_id)){
+						irrelevant.add(curr_item_id);
+					}				
+				}
+
+				//computes the maximum number of irrelevant items we can remove
+				//without ending with less items than the number of itens we need to recommend
+				int num_items_to_remove = (int)(perc_reduce*irrelevant.size());
+				int num_items_after_under = user.getNumItems()-num_items_to_remove;
+				//if (num_items_after_under < i2use)
+				//	num_items_to_remove = user.getNumItems()-i2use;
+
+				num_items_after_under = user.getNumItems() - num_items_to_remove;
+
+				Random r = new Random();
+				while (user.getNumItems() > num_items_after_under){								
+					user.deleteItem(irrelevant.get(r.nextInt(irrelevant.size()-1)));
+				}
+			}
+		}
+		System.out.println("Ending Undersampling");
+	}
+	
 	
 	public static void normalize(Vector vet2norm,boolean sorted){
 	

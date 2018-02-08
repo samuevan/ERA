@@ -30,9 +30,8 @@ import ec.util.Parameter;
 import ec.util.ParameterDatabase;
 
 
-public class GPRA_Principal {
-
-
+public class GPRA_Principal { 
+	
 	private static InputData dados = null;
 	private static Vector<Individual> best_individuals_by_run = null;
 	private static Vector<Individual> best_individuals_by_part;
@@ -360,14 +359,14 @@ public class GPRA_Principal {
 				if (p_args.getBoolean("use_plain"))
 					dados = new InputData(plain_train, usermap, test, validacao, p_args.getInt("i2use"),p_args.getInt("i2sug"),p_args.getBoolean("use_sparse"));
 				else
-					if (p_args.getBoolean("gr")){
+					if (p_args.getList("grs") != null){
 						//TODO isolar inicializacao do ERA para grupos
 						
-						//If grs parameter is null uses all the recommenders in the folder to
+						//If grs parameter is empty uses all the recommenders in the folder to
 						//construct the group recommendation, otherside uses only the recommenders in the 
 						//list
 						List<String> grs_base_rec = p_args.getList("grs");						
-						if (grs_base_rec != null){
+						if (!grs_base_rec.isEmpty()){
 							
 							Vector<File> to_remove = new Vector<File>();
 							for (File aux_f : vf){
@@ -386,7 +385,8 @@ public class GPRA_Principal {
 								p_args.getInt("i2use"),p_args.getInt("i2sug")); //read data and usermap]
 						//dados.ExtractGroupFeatures(vf, new File(p_args.getString("groups_file")), test,p_args.getInt("i2use") , p_args.getInt("i2sug"));
 						
-						
+						//Performs undersampling just in train
+						Utils.randomUndersampling(dados.getUsers(), p_args.getDouble("under"), p_args.getInt("i2use"));
 						
 						
 					}
@@ -472,13 +472,13 @@ public class GPRA_Principal {
 				dados_reeval = new InputData(train_reeval, usermap_reeval, test_reeval, test_reeval, p_args.getInt("i2use"), p_args.getInt("i2sug"),p_args.getBoolean("use_sparse"));
 			}else{
 				
-				if (p_args.getBoolean("gr")){
+				if (p_args.getList("grs") != null){
 									
-					//If grs parameter is null uses all the recommenders in the folder to
+					//If grs parameter is empty uses all the recommenders in the folder to
 					//construct the group recommendation, otherside uses only the recommenders in the 
 					//list
 					List<String> grs_rec = p_args.getList("grs"); 
-					if (grs_rec != null){ 
+					if (!grs_rec.isEmpty()){ 
 						Vector<File> to_remove = new Vector<File>();
 
 						for (File aux_f : vf_reeval){
@@ -764,12 +764,12 @@ public class GPRA_Principal {
 					out_reeval.close();
 					PrintWriter print_ranking;
 					
-					if (p_args.getBoolean("gr"))
+					if (p_args.getList("grs") != null)
 					{
 						//Include the base recommenders' names in the output name
 						List<String> grs_base_rec = p_args.getList("grs");
 						String cx = "";				
-						if (grs_base_rec != null)
+						if (!grs_base_rec.isEmpty())
 							cx = "_"+grs_base_rec.toString().replace(", ", "_").replace("[", "").replace("]", "");
 
 						print_ranking = new PrintWriter(new BufferedWriter(

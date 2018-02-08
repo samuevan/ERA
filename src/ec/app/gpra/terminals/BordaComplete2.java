@@ -8,9 +8,9 @@ import ec.gp.*;
 //import ec.gp.GPIndividual;
 
 
-public class BordaComplete extends GPNode{
+public class BordaComplete2 extends GPNode{
 
-    public String toString() { return "BCCG"; }
+    public String toString() { return "BCC2"; }
 
 /*
   public void checkConstraints(final EvolutionState state,
@@ -32,7 +32,7 @@ public class BordaComplete extends GPNode{
 			final GPIndividual individual, final Problem problem) 
 	{
 		DoubleData rd = ((DoubleData) (input));
-		rd.x = ((GPRA_Problem) problem).bordaComplete_global; //TODO pode ser que eu use um vetor na classe de 
+		rd.x = ((GPRA_Problem) problem).bordaComplete.get(2); //TODO pode ser que eu use um vetor na classe de 
 		                                                   //avaliao e aqui eu pegue a posicao que eu quero 
 	}
 	

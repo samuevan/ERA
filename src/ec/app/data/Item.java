@@ -10,7 +10,7 @@ public class Item{
 	
 	private int itemID;
 	private int numRankings = 0;
-	private Vector<Double> svd_coeficients; 
+	//private Vector<Double> svd_coeficients; 
 	//private SparseVector sparse_doubles;
 	private Vector<Integer> positions;
 	//given_scores stores the scores attributed to the item by the each of the input rankings
@@ -20,6 +20,19 @@ public class Item{
 	private double GS_max = Double.NaN;
 	private double GS_min = Double.NaN;
 	private double GS_std = Double.NaN;
+	
+	
+
+	private double PW_bin_row = Double.NaN;
+	private double PW_bin_col = Double.NaN;
+	private double PW_rank_row = Double.NaN;
+	private double PW_rank_col = Double.NaN;
+	private double PW_logrank_row = Double.NaN;
+	private double PW_logrank_col = Double.NaN;
+	
+	
+	private int GT = 0;
+	
 	
 	private Vector<Double> given_scores;  
 	private Vector<Double> rankScores;
@@ -34,10 +47,12 @@ public class Item{
 	private Vector<Double> genericDoubles;
 	private boolean useGenericValues = false;
 	private boolean use_sparse;
-	private double bordaScoreComplete = 0; //The sum of the borda scores for all rankings
-	private double combSUMscore;
+	private Vector<Double> bordaScoreComplete;// = 0; //The sum of the borda scores for all rankings
+	private double bsc_global = 0; //The sum of the borda scores for all rankings
+
+	private Vector<Double> combSUMscore;
 	private double combMNZscore;
-	private double RRFscore;
+	private Vector<Double> RRFscore;
 	
 	//TODO Posso armazenar somente os indices das categorias as quais o filme pertence
 
@@ -48,13 +63,16 @@ public class Item{
 		
 		itemID = id;
 		numRankings = numR;
-		svd_coeficients = new Vector<Double>(4);
+		//svd_coeficients = new Vector<Double>(4);
 		given_scores = new Vector<Double>(numRankings);
 		positions = new Vector<Integer>(numRankings);
 		rankScores = new Vector<Double>(numRankings);		
 		bordaScores = new Vector<Double>(numRankings);
 		actual_bordaScores = new Vector<Double>(numRankings);
+		bordaScoreComplete =  new Vector<Double>();
+		RRFscore = new Vector<Double>();
 		genericDoubles = new Vector<Double>();
+		combSUMscore = new Vector<Double>();
 		//lda_scores = new Vector<Double>();
 		//categories = new Vector<Integer>();
 		initializeVectors();
@@ -106,6 +124,15 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 		return this.sparse_doubles.get(pos);
 	}*/
 	
+	
+	
+	public int getGT(){
+		return GT;
+	}
+	
+	public void setGT(int x){
+		GT = x;
+	}
 
 	public double getGenericValue(int pos){
 		return this.genericDoubles.get(pos);
@@ -122,14 +149,75 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 		return this.genericDoubles.size();
 	}
 	
+	public double getPW_bin_row() {
+		return PW_bin_row;
+	}
+
+
+	public void setPW_bin_row(double pW_bin_row) {
+		PW_bin_row = pW_bin_row;
+	}
+
+
+	public double getPW_bin_col() {
+		return PW_bin_col;
+	}
+
+
+	public void setPW_bin_col(double pW_bin_col) {
+		PW_bin_col = pW_bin_col;
+	}
+
+
+	public double getPW_rank_row() {
+		return PW_rank_row;
+	}
+
+
+	public void setPW_rank_row(double pW_rank_row) {
+		PW_rank_row = pW_rank_row;
+	}
+
+
+	public double getPW_rank_col() {
+		return PW_rank_col;
+	}
+
+
+	public void setPW_rank_col(double pW_rank_col) {
+		PW_rank_col = pW_rank_col;
+	}
+
+
+	public double getPW_logrank_row() {
+		return PW_logrank_row;
+	}
+
+
+	public void setPW_logrank_row(double pW_logrank_row) {
+		PW_logrank_row = pW_logrank_row;
+	}
+
+
+	public double getPW_logrank_col() {
+		return PW_logrank_col;
+	}
+
+
+	public void setPW_logrank_col(double pW_logrank_col) {
+		PW_logrank_col = pW_logrank_col;
+	}
+
 	
-	public Vector<Double> getSVDCoeficients(){
+	
+	
+	/*public Vector<Double> getSVDCoeficients(){
 		return svd_coeficients;
 	}
 	
 	public void setSVDCoeficients(Vector<Double> coefs){
 		this.svd_coeficients = coefs;
-	}
+	}*/
 	
 	
 	public void setRankScore(double score, int rankPos){
@@ -143,6 +231,15 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	public void setBordaScore(double score, int rankPos){
 		bordaScores.set(rankPos, score);
 	}
+	
+	public double getBSC_Global(){
+		return bsc_global;
+	}
+	
+	public void setBSC_Global(Double bsc_g){
+		bsc_global = bsc_g;
+	}
+	
 	
 	public void setActualBordaScore(double score, int rankPos){
 		actual_bordaScores.set(rankPos, score);
@@ -171,12 +268,16 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	}
 	
 	
-	public double getBordaScoreComplete(){
+	public Vector<Double> getBordaScoreComplete(){
 		return bordaScoreComplete;
 	}
 	
-	public void setBordaScoreComplete(double bsc){
-		bordaScoreComplete = bsc;
+	public void setBordaScoreComplete(int pos, double bsc){
+		bordaScoreComplete.set(pos, bsc);;
+	}
+	
+	public void addBordaScoreComplete(double bsc){
+		bordaScoreComplete.addElement(bsc);
 	}
 	
 	
@@ -326,23 +427,31 @@ public Item(int id, int numGenericValues, boolean useGenericValues,boolean use_s
 	}
 	
 	
-	public void setRRF(double rrf){
-		this.RRFscore = rrf;
+	public void setRRF(int pos, double rrf){
+		this.RRFscore.set(pos,rrf);
 	}
 	
-	public double getRRF(){
+	public void addRRF(double rrf){
+		RRFscore.addElement(rrf);
+	}
+	
+	public Vector<Double> getRRF(){
 		return this.RRFscore;
 	}
 	
 	
-	public void setCombSUM(double sum){
-		this.combSUMscore = sum;
+	public void setCombSUM(int pos,double sum){
+		this.combSUMscore.set(pos, sum);
 	}
 	
-	public double getCombSUM(){
+	public Vector<Double> getCombSUM(){
 		return this.combSUMscore;
 	}
 	
+	
+	public void addCombSum(double sum){
+		this.combSUMscore.addElement(sum);
+	}
 	
 	public void setCombMNZ(double mnz){
 		this.combMNZscore = mnz;

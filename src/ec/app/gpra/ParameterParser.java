@@ -51,13 +51,19 @@ public class ParameterParser {
         
         parser.addArgument("-m","--mut")
 				.type(Double.class)
-				.setDefault(0.35)
+				.setDefault(0.25)
 				.help("Mutation probability. Use range [0-1]");
 
         parser.addArgument("-x","--xover")
 				.type(Double.class)
 				.setDefault(0.65)
 				.help("Crossover probability. Use range [0-1]");
+        
+        parser.addArgument("-u","--under")
+			.type(Double.class)
+			.setDefault(0.6)
+			.help("Indicates the percentage of irrelevant instaces to remove from each user.");
+	        
         
         parser.addArgument("-r","--rep")
 				.type(Double.class)
@@ -179,19 +185,13 @@ public class ParameterParser {
 		.action(storeTrue())
 		.help("Save the plain version of InputData in out_dir folder");
 
-        
-        
-        parser.addArgument("--gr")
-				.type(Boolean.class)
-				.setDefault(false)
-				.action(storeTrue())
-				.help("Run the ERA to the Group Recomendation problem. When enabled one needs to set"
-						+ "the file containing the groups");                
-        
+                
         //TODO verify if it is possible to merge this parameter with --gr  
         parser.addArgument("--grs")
         		.nargs("*")
-        		.help("List of Recommenders to be used in the group aggregation");
+        		.help("If set, the program will run in the Group Aggregation Setting."
+        				+ "It can receives a list of Recommenders to be used in the group aggregation"
+        				+ "Or left empty to use all the recomenders (.out) in the base folder");
         
         parser.addArgument("--groups_file")
 		.setDefault("")
@@ -211,8 +211,7 @@ public class ParameterParser {
             parser.handleError(e);
             System.exit(1);
         }
-		
-		
+        
 		return ns;
 	}
 

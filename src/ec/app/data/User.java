@@ -8,15 +8,15 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Vector;
 
-import net.librec.math.algorithm.SVD;
-import net.librec.math.structure.DataMatrix;
-import net.librec.math.structure.DenseMatrix;
+//import net.librec.math.algorithm.SVD;
+//import net.librec.math.structure.DataMatrix;
+//import net.librec.math.structure.DenseMatrix;
 import ec.app.util.Metrics;
 import ec.app.util.Pair;
 import ec.app.util.Utils;
 
 
-
+import net.librec.math.structure.*;
 
 
 
@@ -25,8 +25,8 @@ import java.util.List;
 // 
 
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
+//import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+//import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 
 public class User {
@@ -34,6 +34,7 @@ public class User {
 	private int ID;
 	private int numRankings;
 	private int NumItemsToUse;
+	private int NumRakingsGroup = 1;
 	private Map<Integer, Item> Items;
 	//private Vector<Pair<Integer,Double>> lda_probabilities;
 	public Vector<Vector<Integer>> alternative_rankings;
@@ -196,6 +197,14 @@ public class User {
 	}
 	
 	
+	public void setNumRankingsGroup(int n){
+		NumRakingsGroup = n;
+	}
+	
+	public int getNumrankingsgroup(){
+		return NumRakingsGroup;
+	}
+	
 	//Adciona um item a um ranking em uma posicao especifica
 	/*public void addItemOriginalRanking(int it, int rank, int position){
 		originalRankings.get(rank)[position] = it;
@@ -241,6 +250,10 @@ public class User {
 	}
 
 
+	public void deleteItem(int item_id){
+		Items.remove(item_id);
+	}
+	
 
 	public Item getItem(Integer item_key) {
 		// TODO Auto-generated method stub
@@ -416,36 +429,59 @@ public class User {
 		double bsc_max = 0;
 		double bsc_min = 0;
 		
+		double bsc_max_global = 0;
+		double bsc_min_global = 0;
+		
 		for(Integer item_id : Items.keySet()){			
 			
 			Item item = Items.get(item_id);
 			//Computes the value of the feature for each input ranking
-			double bsc = 0.0;
-			for (int rank = 0; rank < numRankings; rank++ ){
-				int item_pos = item.getPosition(rank);
-				if (item_pos != -1){
-					bsc += NumItemsToUse - (item_pos -1);
+			
+			double bsc_global = 0.0;
+			for (int rankGroup = 0; rankGroup < NumRakingsGroup; rankGroup++)
+			{
+				int rankGroupInitial = (numRankings/NumRakingsGroup)*rankGroup;
+				int rankGroupFinal = (numRankings/NumRakingsGroup)*(rankGroup+1);
+				double bsc = 0.0;
+				for (int rank = rankGroupInitial; rank < rankGroupFinal; rank++ ){
+					int item_pos = item.getPosition(rank);
+					if (item_pos != -1){
+						bsc += NumItemsToUse - (item_pos -1);
+						bsc_global += NumItemsToUse - (item_pos -1);
+					}
 				}
+				if (bsc > bsc_max)
+					bsc_max = bsc;
+				else
+					if (bsc < bsc_min)
+						bsc_min = bsc;
+				//bsc_global += bsc;
+				item.addBordaScoreComplete(bsc);
+				//item.setBordaScoreComplete(bsc);
 			}
-			if (bsc > bsc_max)
-				bsc_max = bsc;
+
+			if (bsc_global > bsc_max_global)
+				bsc_max_global = bsc_global;
 			else
-				if (bsc < bsc_min)
-					bsc_min = bsc;
+				if (bsc_global < bsc_min_global)
+					bsc_min_global = bsc_global;
 			
-			
-			item.setBordaScoreComplete(bsc);
-			
+			item.setBSC_Global(bsc_global);
 		}
 		
 		//NORMALIZING
 		for(Integer item_id : Items.keySet()){
 			
 			Item item = Items.get(item_id);
-			double curr_borda = item.getBordaScoreComplete();
-			curr_borda = (curr_borda - bsc_min)/(bsc_max - bsc_min);		
+			double curr_borda_global = item.getBSC_Global();
+			curr_borda_global = (curr_borda_global - bsc_min_global)/(bsc_max_global - bsc_min_global);		
 					
-			item.setBordaScoreComplete(curr_borda);
+			item.setBSC_Global(curr_borda_global);
+			for (int i = 0; i < item.getBordaScoreComplete().size(); i++)
+			{
+				double curr_borda = (item.getBordaScoreComplete().get(i) - bsc_min)/(bsc_max - bsc_min);
+				item.setBordaScoreComplete(i, curr_borda);
+			}
 			
 		}
 		
@@ -457,17 +493,23 @@ public class User {
 		
 		//For each item recommended to the user
 		for(Integer item_id : Items.keySet()){			
-			
 			Item item = Items.get(item_id);
-			//Computes the value of the feature for each input ranking
-			double rrf = 0.0;
-			for (int rank = 0; rank < numRankings; rank++ ){
-				int item_pos = item.getPosition(rank);
-				if (item_pos != -1){
-					rrf += 1.0/(item_pos + k);
+			for (int rankGroup = 0; rankGroup < NumRakingsGroup; rankGroup++)
+			{
+				int rankGroupInitial = (numRankings/NumRakingsGroup)*rankGroup;
+				int rankGroupFinal = (numRankings/NumRakingsGroup)*(rankGroup+1);
+
+				//Computes the value of the feature for each input ranking
+				double rrf = 0.0;
+				for (int rank = rankGroupInitial; rank < rankGroupFinal; rank++ ){
+					int item_pos = item.getPosition(rank);
+					if (item_pos != -1){
+						rrf += 1.0/(item_pos + k);
+					}
 				}
+				item.addRRF(rrf);
+				//item.setRRF(rrf);
 			}
-			item.setRRF(rrf);
 			
 		}
 		
@@ -481,15 +523,21 @@ public class User {
 			
 			Item item = Items.get(item_id);
 			//Computes the value of the feature for each input ranking
-			double score = 0.0;
-			for (int rank = 0; rank < numRankings; rank++ ){
-				int item_pos = item.getPosition(rank);
-				if (item_pos != -1){
-					score += 1.0 - (item_pos-1.0)/this.getNumRankItems();
+			for (int rankGroup = 0; rankGroup < NumRakingsGroup; rankGroup++)
+			{
+				int rankGroupInitial = (numRankings/NumRakingsGroup)*rankGroup;
+				int rankGroupFinal = (numRankings/NumRakingsGroup)*(rankGroup+1);
+
+				double score = 0.0;
+				for (int rank = rankGroupInitial; rank < rankGroupFinal; rank++ ){
+					int item_pos = item.getPosition(rank);
+					if (item_pos != -1){
+						score += 1.0/this.getNumRankItems() - (item_pos-1.0)/Math.pow(this.getNumRankItems(),2);//Estou ponderando para que a soma seja no maximo 1
+					}
 				}
+				item.addCombSum(score);
+				//item.setCombSUM(score);
 			}
-			item.setCombSUM(score);
-			
 		}
 		
 
@@ -684,6 +732,9 @@ public class User {
 		double den = 0;
 		for (int i = 0; i < numRankings; i++){
 			//just compute if both items are present in rank
+			int x = item1.getPosition(i);
+			int y = item2.getPosition(i);
+			
 			if (!((item1.getPosition(i) == -1) | (item2.getPosition(i) == -1))){
 				den += 1.0;
 				if (item1.getPosition(i) < item2.getPosition(i)){				
@@ -808,7 +859,7 @@ public class User {
 	 * INCOMPLETE
 	 * @param array
 	 */
-	public void computeSVD(double[][] array){
+	/*public void computeSVD(double[][] array){
 				
 		Array2DRowRealMatrix data = new Array2DRowRealMatrix(array);
 							
@@ -817,19 +868,19 @@ public class User {
 		Array2DRowRealMatrix U = (Array2DRowRealMatrix) svd.getU();
 		Array2DRowRealMatrix VT = (Array2DRowRealMatrix) svd.getVT();		
 		
-	}
+	}*/
 	
 	
 	
 	
-	public void computeItemsPairwiseMatrix(){
+	public void computeItemsPairwiseFeatures(){
 		
-		int NUM_SVD_COEF = 2;
+		//int NUM_SVD_COEF = 2;
 		
-		double[][] itemsByItems = new double[Items.size()][Items.size()];
+		//double[][] itemsByItems = new double[Items.size()][Items.size()];
 		
 		DenseMatrix itemsByItemsBin = new DenseMatrix(Items.size(), Items.size());		
-		DenseMatrix itemsByItemsOccur = new DenseMatrix(Items.size(), Items.size());
+		//DenseMatrix itemsByItemsOccur = new DenseMatrix(Items.size(), Items.size());
 		DenseMatrix itemsByItemsRank = new DenseMatrix(Items.size(), Items.size());
 		DenseMatrix itemsByItemsLogRank = new DenseMatrix(Items.size(), Items.size());
 		ArrayList<Integer> items_ids = new ArrayList<Integer>(Items.keySet());
@@ -844,10 +895,10 @@ public class User {
 				if (i!=j){
 					double items_diff = itemsPairwiseBinaryDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
 					itemsByItemsBin.set(i, j, items_diff);
-					itemsByItems[i][j] = items_diff;
+					//itemsByItems[i][j] = items_diff;
 					
-					double items_diffOccu = itemsPairwiseOccurenceDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
-					itemsByItemsOccur.set(i, j, items_diffOccu);
+					//double items_diffOccu = itemsPairwiseOccurenceDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
+					//itemsByItemsOccur.set(i, j, items_diffOccu);
 					
 					double items_diffRank = itemsPairwiseRankDifference(Items.get(items_ids.get(i)), Items.get(items_ids.get(j)));
 					itemsByItemsRank.set(i, j, items_diffRank);
@@ -864,12 +915,12 @@ public class User {
 		
 		int num_items = items_ids.size();
 
-		computeSVD(itemsByItems);
+		/*computeSVD(itemsByItems);
 		SVD svd = new SVD(itemsByItemsBin);				
 		
 		DenseMatrix U_reduced = svd.getU().getSubMatrix(0, num_items-1, 0, NUM_SVD_COEF-1);
 		DenseMatrix V_reduced = svd.getV().getSubMatrix(0, num_items-1, 0, NUM_SVD_COEF-1);
-		double S_reduced[] = Arrays.copyOfRange(svd.getSingularValues(),0,NUM_SVD_COEF-1);
+		double S_reduced[] = Arrays.copyOfRange(svd.getSingularValues(),0,NUM_SVD_COEF-1);*/
 		
 		//TODO atribuir os valores ao item
 		
@@ -879,12 +930,23 @@ public class User {
 			
 			Vector<Double> svd_coefs = new Vector<Double>();
 			
-			svd_coefs.add(itemsByItemsBin.sumOfRow(i)/(float)num_items);
+			/*svd_coefs.add(itemsByItemsBin.sumOfRow(i)/(float)num_items);
 			svd_coefs.add(itemsByItemsOccur.sumOfRow(i)/(float)num_items);
 			svd_coefs.add(itemsByItemsRank.sumOfRow(i)/(float)num_items);
-			svd_coefs.add(itemsByItemsLogRank.sumOfRow(i)/(float)num_items);
+			svd_coefs.add(itemsByItemsLogRank.sumOfRow(i)/(float)num_items);*/
 			
-			Items.get(items_ids.get(i)).setSVDCoeficients(svd_coefs);
+			
+			Items.get(items_ids.get(i)).setPW_bin_row(itemsByItemsBin.sumOfRow(i)/(float)num_items);
+			Items.get(items_ids.get(i)).setPW_bin_row(itemsByItemsBin.sumOfColumn(i)/(float)num_items);
+			
+			Items.get(items_ids.get(i)).setPW_rank_row(itemsByItemsRank.sumOfRow(i)/(float)num_items);
+			Items.get(items_ids.get(i)).setPW_rank_row(itemsByItemsRank.sumOfColumn(i)/(float)num_items);
+			
+			Items.get(items_ids.get(i)).setPW_logrank_row(itemsByItemsLogRank.sumOfRow(i)/(float)num_items);
+			Items.get(items_ids.get(i)).setPW_logrank_row(itemsByItemsLogRank.sumOfColumn(i)/(float)num_items);
+			
+			
+			//Items.get(items_ids.get(i)).setSVDCoeficients(svd_coefs);
 			
 		}
 		
@@ -910,7 +972,7 @@ public class User {
 	
 	
 	public void ComputeFeatures(){
-		//computeItemsPairwiseMatrix();
+		computeItemsPairwiseFeatures();
 		computeItemsRankScore();
 		computeProbOnTopK(0.3); //TODO receive as parameter
 		computeTimesOnRanks();

@@ -8,9 +8,9 @@ import ec.gp.*;
 //import ec.gp.GPIndividual;
 
 
-public class SUM extends GPNode{
+public class SUM6 extends GPNode{
 
-    public String toString() { return "SUM"; }
+    public String toString() { return "SUM6"; }
 
 /*
   public void checkConstraints(final EvolutionState state,
@@ -32,7 +32,7 @@ public class SUM extends GPNode{
 			final GPIndividual individual, final Problem problem) 
 	{
 		DoubleData rd = ((DoubleData) (input));
-		rd.x = ((GPRA_Problem) problem).combSUM; //TODO pode ser que eu use um vetor na classe de 
+		rd.x = ((GPRA_Problem) problem).combSUM.get(6); //TODO pode ser que eu use um vetor na classe de 
 		                                                   //avaliao e aqui eu pegue a posicao que eu quero 
 	}
 	
